@@ -25,33 +25,34 @@ public abstract class Design {
 	protected int yShift;
 
 	public abstract Design fromNBT(CompoundTag compound);
-	
+
 	protected void applyNBT(CompoundTag compound) {
 		size = NbtUtils.readBlockPos(compound.getCompound("Size"));
 		defaultWidth = size.getX();
 		slices = new DesignSlice[size.getY()];
-		
+
 		defaultHeight = 0;
 		yShift = 0;
 		heights = ImmutableSet.of(0);
 		ListTag sliceTagList = compound.getList("Layers", 10);
-		
+
 		for (int sliceIndex = 0; sliceIndex < slices.length; sliceIndex++) {
 			DesignSlice slice = DesignSlice.fromNBT(sliceTagList.getCompound(sliceIndex));
 			defaultHeight = slice.adjustDefaultHeight(defaultHeight);
 			heights = slice.adjustHeigthsList(heights);
 			slices[sliceIndex] = slice;
-			
+
 			if (slice.getTrait() == DesignSliceTrait.MaskBelow)
 				yShift -= 1;
-		}		
+		}
 	}
-	
+
 	public void getBlocks(DesignInstance instance, Map<BlockPos, PaletteBlockInfo> blocks) {
 		getBlocksShifted(instance, blocks, BlockPos.ZERO);
 	}
-	
-	protected void getBlocksShifted(DesignInstance instance, Map<BlockPos, PaletteBlockInfo> blocks, BlockPos localShift) {
+
+	protected void getBlocksShifted(DesignInstance instance, Map<BlockPos, PaletteBlockInfo> blocks,
+		BlockPos localShift) {
 		BlockPos position = instance.localAnchor;
 		BlockPos totalShift = localShift.offset(0, yShift, 0);
 		List<DesignSlice> toPrint = selectPrintedLayers(instance.height);
@@ -63,14 +64,15 @@ public abstract class Design {
 					PaletteBlockInfo block = layer.getBlockAt(x, z, instance.rotationY);
 					if (block == null)
 						continue;
-					BlockPos pos = rotateAroundZero(new BlockPos(x, y, z).offset(totalShift), instance.rotationY)
-							.offset(position);
+					BlockPos pos =
+						rotateAroundZero(new BlockPos(x, y, z).offset(totalShift), instance.rotationY).offset(position);
+					block.pos = pos;
 					putBlock(blocks, pos, block);
 				}
 			}
 		}
 	}
-	
+
 	protected List<DesignSlice> selectPrintedLayers(int targetHeight) {
 		List<DesignSlice> toPrint = new LinkedList<>();
 		int currentHeight = defaultHeight;
@@ -80,9 +82,12 @@ public abstract class Design {
 	}
 
 	protected void putBlock(Map<BlockPos, PaletteBlockInfo> blocks, BlockPos pos, PaletteBlockInfo block) {
-		if (!blocks.containsKey(pos) || !blocks.get(pos).palette.isPrefferedOver(block.palette)) {
-			blocks.put(pos, block);
-		}
+		if (blocks.containsKey(pos) && blocks.get(pos)
+			.preferredOver(block))
+			return;
+
+		block.pos = pos;
+		blocks.put(pos, block);
 	}
 
 	public String toString() {
@@ -92,7 +97,7 @@ public abstract class Design {
 		}
 		return String.format("Design with ") + heights;
 	}
-	
+
 	public boolean fitsHorizontally(int width) {
 		return this.defaultWidth == width;
 	}
@@ -108,9 +113,9 @@ public abstract class Design {
 	public BlockPos rotateAround(BlockPos in, int rotation, BlockPos origin) {
 		BlockPos local = in.subtract(origin);
 		int x = (rotation == 180) ? -local.getX()
-				: (rotation == 90) ? -local.getZ() : (rotation == -90) ? local.getZ() : local.getX();
+			: (rotation == 90) ? -local.getZ() : (rotation == -90) ? local.getZ() : local.getX();
 		int z = (rotation == 180) ? -local.getZ()
-				: (rotation == 90) ? local.getX() : (rotation == -90) ? -local.getX() : local.getZ();
+			: (rotation == 90) ? local.getX() : (rotation == -90) ? -local.getX() : local.getZ();
 		BlockPos rotated = new BlockPos(x, local.getY(), z);
 		return rotated.offset(origin);
 	}
@@ -143,13 +148,11 @@ public abstract class Design {
 		public void getBlocks(Map<BlockPos, PaletteBlockInfo> blocks) {
 			template.getBlocks(this, blocks);
 		}
-		
+
 		public Design getTemplate() {
 			return template;
 		}
 
-
 	}
-
 
 }

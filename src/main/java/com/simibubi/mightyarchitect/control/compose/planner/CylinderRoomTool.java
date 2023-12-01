@@ -80,8 +80,8 @@ public class CylinderRoomTool extends RoomTool {
 
 		ThemeStatistics stats = theme.getStatistics();
 		boolean hasFoundation = theme.getLayers()
-			.contains(DesignLayer.Foundation);
-		room.designLayer = hasFoundation ? DesignLayer.Foundation : DesignLayer.Regular;
+			.contains(DesignLayer.FOUNDATION);
+		room.designLayer = hasFoundation ? DesignLayer.FOUNDATION : DesignLayer.REGULAR;
 
 		int radius = (room.width - 1) / 2;
 
@@ -101,7 +101,7 @@ public class CylinderRoomTool extends RoomTool {
 		if (radius > stats.MaxConicalRoofRadius || !stats.hasConicalRoof) {
 			room.roofType = stats.hasFlatTowerRoof ? DesignType.FLAT_ROOF : DesignType.NONE;
 		} else {
-			room.roofType = stats.hasConicalRoof ? DesignType.ROOF : DesignType.NONE;
+			room.roofType = stats.hasConicalRoof ? DesignType.GABLE_ROOF : DesignType.NONE;
 		}
 
 		lastAddedStack = new CylinderStack(room);

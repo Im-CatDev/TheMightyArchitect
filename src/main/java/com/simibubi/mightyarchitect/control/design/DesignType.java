@@ -1,7 +1,5 @@
 package com.simibubi.mightyarchitect.control.design;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -13,31 +11,32 @@ import com.simibubi.mightyarchitect.control.design.partials.Roof;
 import com.simibubi.mightyarchitect.control.design.partials.Tower;
 import com.simibubi.mightyarchitect.control.design.partials.TowerFlatRoof;
 import com.simibubi.mightyarchitect.control.design.partials.TowerRoof;
-import com.simibubi.mightyarchitect.control.design.partials.Trim;
 import com.simibubi.mightyarchitect.control.design.partials.Wall;
+import com.simibubi.mightyarchitect.gui.ScreenResources;
 
 public enum DesignType {
 
-	WALL("wall", "Wall", new Wall()), 
-	FACADE("facade", "Facade", new Facade()), 
-	CORNER("corner", "Corner", new Corner()), 
-	TOWER("tower", "Tower", new Tower()), 
-	TRIM("trim", "Trim", new Trim()), 
-	ROOF("roof", "Gable Roof", new Roof()), 
-	FLAT_ROOF("flatroof", "Flat Roof", new FlatRoof()), 
-	TOWER_ROOF("towerroof", "Conical Roof", new TowerRoof()), 
-	TOWER_FLAT_ROOF("towerflatroof", "Flat Tower Roof", new TowerFlatRoof()), 
-	
-	NONE("none", "None", null);
+	WALL("wall", "Wall", new Wall(), ScreenResources.ICON_WALL),
+	FACADE("facade", "Facade", new Facade(), ScreenResources.ICON_FACADE),
+	CORNER("corner", "Corner", new Corner(), ScreenResources.ICON_CORNER),
+	TOWER("tower", "Tower", new Tower(), ScreenResources.ICON_TOWER_NO_ROOF),
+	GABLE_ROOF("roof", "Gable Roof", new Roof(), ScreenResources.ICON_NORMAL_ROOF),
+	FLAT_ROOF("flatroof", "Flat Roof", new FlatRoof(), ScreenResources.ICON_FLAT_ROOF),
+	TOWER_CONE("towerroof", "Tower Cone", new TowerRoof(), ScreenResources.ICON_TOWER_ROOF),
+	TOWER_CAP("towerflatroof", "Tower Cap", new TowerFlatRoof(), ScreenResources.ICON_TOWER_FLAT_ROOF),
+
+	NONE("none", "None", null, ScreenResources.ICON_NONE);
 
 	private String filePath;
 	private String displayName;
 	private Design design;
+	private ScreenResources icon;
 
-	private DesignType(String filePath, String displayName, Design design) {
+	private DesignType(String filePath, String displayName, Design design, ScreenResources icon) {
 		this.filePath = filePath;
 		this.displayName = displayName;
 		this.design = design;
+		this.icon = icon;
 	}
 
 	public String getFilePath() {
@@ -52,96 +51,67 @@ public enum DesignType {
 		return design;
 	}
 
-	public boolean hasAdditionalData() {
-		return hasSizeData() || hasSubtypes();
+	public ScreenResources getIcon() {
+		return icon;
 	}
 
 	public String getAdditionalDataName() {
-		switch (this) {
-		case ROOF:
-			return "Roof Span";
-		case FLAT_ROOF:
-			return "Margin";
-		case TOWER:
-		case TOWER_FLAT_ROOF:
-		case TOWER_ROOF:
-			return "Tower Radius";
-		case WALL:
-			return "Size Behaviour";
-		default:
-			return "";
-		}
+		return switch (this) {
+		case GABLE_ROOF -> "Roof Span";
+		case FLAT_ROOF -> "Margin";
+		case TOWER, TOWER_CAP, TOWER_CONE -> "Tower Radius";
+		case WALL -> "Horizontal Repetition";
+		default -> "";
+		};
 	}
 
-	public boolean hasSizeData() {
+	public boolean hasAdditionalData() {
 		switch (this) {
+		case WALL:
 		case FLAT_ROOF:
-		case ROOF:
+		case GABLE_ROOF:
 		case TOWER:
-		case TOWER_FLAT_ROOF:
-		case TOWER_ROOF:
+		case TOWER_CAP:
+		case TOWER_CONE:
 			return true;
 		default:
 			return false;
 		}
 	}
-	
+
 	public int getMaxSize() {
-		switch (this) {
-		case ROOF:
-			return ThemeStatistics.MAX_ROOF_SPAN;
-		case FLAT_ROOF:
-			return ThemeStatistics.MAX_MARGIN;
-		case TOWER:
-		case TOWER_FLAT_ROOF:
-		case TOWER_ROOF:
-			return ThemeStatistics.MAX_TOWER_RADIUS;
-		default:
-			return 0;
-		}
+		return switch (this) {
+		case GABLE_ROOF -> ThemeStatistics.MAX_ROOF_SPAN;
+		case FLAT_ROOF -> ThemeStatistics.MAX_MARGIN;
+		case TOWER, TOWER_CAP, TOWER_CONE -> ThemeStatistics.MAX_TOWER_RADIUS;
+		case WALL -> Wall.ExpandBehaviour.values().length - 1;
+		default -> 0;
+		};
 	}
-	
+
 	public int getMinSize() {
-		switch (this) {
-		case ROOF:
-			return ThemeStatistics.MIN_ROOF_SPAN;
-		case FLAT_ROOF:
-			return ThemeStatistics.MIN_MARGIN;
-		case TOWER:
-		case TOWER_FLAT_ROOF:
-		case TOWER_ROOF:
-			return ThemeStatistics.MIN_TOWER_RADIUS;
-		default:
-			return 0;
-		}
+		return switch (this) {
+		case GABLE_ROOF -> ThemeStatistics.MIN_ROOF_SPAN;
+		case FLAT_ROOF -> ThemeStatistics.MIN_MARGIN;
+		case TOWER, TOWER_CAP, TOWER_CONE -> ThemeStatistics.MIN_TOWER_RADIUS;
+		default -> 0;
+		};
 	}
 
-	public boolean hasSubtypes() {
-		switch (this) {
-		case WALL:
-			return true;
-		default:
-			return false;
-		}
+	public String formatData(int data) {
+		return switch (this) {
+		case WALL -> Wall.ExpandBehaviour.values()[data].getDisplayName();
+		case GABLE_ROOF, FLAT_ROOF, TOWER, TOWER_CAP, TOWER_CONE -> data + "m";
+		default -> "";
+		};
 	}
 
-	public List<String> getSubtypeOptions() {
-		switch (this) {
-		case WALL:
-			List<String> list = new ArrayList<>();
-			ImmutableList.copyOf(Wall.ExpandBehaviour.values()).forEach(value -> list.add(value.name()));
-			return list;
-		default:
-			return Collections.emptyList();
-		}
-	}
-	
 	public static List<DesignType> defaults() {
 		return ImmutableList.of(WALL, FACADE, CORNER);
 	}
-	
+
 	public static List<DesignType> roofTypes() {
-		return ImmutableList.of(ROOF, FLAT_ROOF, TOWER_FLAT_ROOF, TOWER_ROOF);
+		return ImmutableList.of(GABLE_ROOF, FLAT_ROOF, TOWER_CAP, TOWER_CONE);
 	}
 
 }

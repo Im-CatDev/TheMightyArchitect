@@ -8,6 +8,7 @@ import com.simibubi.mightyarchitect.MightyClient;
 import com.simibubi.mightyarchitect.control.ArchitectManager;
 import com.simibubi.mightyarchitect.control.design.DesignExporter;
 import com.simibubi.mightyarchitect.control.palette.Palette;
+import com.simibubi.mightyarchitect.control.palette.PaletteBlockShape;
 import com.simibubi.mightyarchitect.control.palette.PaletteDefinition;
 import com.simibubi.mightyarchitect.control.palette.PaletteStorage;
 import com.simibubi.mightyarchitect.foundation.utility.FilesHelper;
@@ -21,7 +22,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 
-public class PalettePickerScreen extends AbstractSimiScreen {
+public class PalettePickerScreen extends SimpleScreen {
 
 	private PaletteButton primary, secondary;
 	private IconButton buttonAddPalette;
@@ -250,17 +251,17 @@ public class PalettePickerScreen extends AbstractSimiScreen {
 			ms.pushPose();
 			ms.translate(x + 1, y + 9, 100);
 			ms.scale(1 + 1 / 64f, 1 + 1 / 64f, 1);
-			renderBlock(ms, mc, new BlockPos(0, 1, 0), Palette.INNER_PRIMARY);
-			renderBlock(ms, mc, new BlockPos(1, 1, 0), Palette.INNER_DETAIL);
-			renderBlock(ms, mc, new BlockPos(0, 0, 0), Palette.HEAVY_PRIMARY);
-			renderBlock(ms, mc, new BlockPos(1, 0, 0), Palette.ROOF_PRIMARY);
+			renderBlock(ms, mc, new BlockPos(0, 1, 0), Palette.STANDARD_FILL);
+			renderBlock(ms, mc, new BlockPos(1, 1, 0), Palette.STANDARD_EDGE);
+			renderBlock(ms, mc, new BlockPos(0, 0, 0), Palette.FOUNDATION_EDGE);
+			renderBlock(ms, mc, new BlockPos(1, 0, 0), Palette.ROOF_FILL);
 			ms.popPose();
 		}
 
 		protected void renderBlock(PoseStack ms, Minecraft mc, BlockPos pos, Palette key) {
 			ms.pushPose();
 
-			GuiGameElement.of(palette.get(key))
+			GuiGameElement.of(palette.get(key, PaletteBlockShape.REGULAR))
 				.atLocal(pos.getX(), pos.getY(), pos.getZ())
 				.scale(7.9f)
 				.render(ms);

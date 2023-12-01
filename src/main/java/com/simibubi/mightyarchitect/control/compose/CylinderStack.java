@@ -22,9 +22,9 @@ public class CylinderStack extends Stack {
 		DesignType roofType = super.getRoofType();
 		switch (roofType) {
 		case FLAT_ROOF:
-			return DesignType.TOWER_FLAT_ROOF;
-		case ROOF:
-			return DesignType.TOWER_ROOF;
+			return DesignType.TOWER_CAP;
+		case GABLE_ROOF:
+			return DesignType.TOWER_CONE;
 		default:
 			return roofType;
 		}
@@ -33,13 +33,8 @@ public class CylinderStack extends Stack {
 	@Override
 	public AllSpecialTextures getTextureOf(Room room) {
 		switch (room.designLayer) {
-		case Foundation:
+		case FOUNDATION:
 			return AllSpecialTextures.TOWER_FOUNDATION;
-		case None:
-		case Open:
-		case Regular:
-		case Roofing:
-		case Special:
 		default:
 			return AllSpecialTextures.TOWER_NORMAL;
 		}

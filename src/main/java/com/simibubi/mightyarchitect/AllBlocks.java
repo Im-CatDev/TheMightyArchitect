@@ -4,11 +4,11 @@ import java.util.Locale;
 import java.util.function.Supplier;
 
 import com.simibubi.mightyarchitect.block.DesignAnchorBlock;
-import com.simibubi.mightyarchitect.block.IJustForRendering;
 import com.simibubi.mightyarchitect.block.SliceMarkerBlock;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -38,8 +38,7 @@ public enum AllBlocks {
 	public static void registerItems(RegisterEvent event) {
 		event.register(ForgeRegistries.ITEMS.getRegistryKey(), helper -> {
 			for (AllBlocks block : values())
-				if (!(block.get() instanceof IJustForRendering))
-					helper.register(block.id, new BlockItem(block.get(), AllItems.standardProperties()));
+				helper.register(block.id, new BlockItem(block.get(), new Item.Properties()));
 		});
 	}
 

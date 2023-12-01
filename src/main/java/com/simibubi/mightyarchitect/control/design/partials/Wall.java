@@ -10,7 +10,17 @@ import net.minecraft.nbt.CompoundTag;
 public class Wall extends Design {
 
 	public enum ExpandBehaviour {
-		None, Repeat, MergedRepeat
+		MERGED("Merged"), ADJACENT("Adjacent"), NONE("None");
+
+		private String displayName;
+
+		private ExpandBehaviour(String displayName) {
+			this.displayName = displayName;
+		}
+
+		public String getDisplayName() {
+			return displayName;
+		}
 	}
 
 	public ExpandBehaviour expandBehaviour;
@@ -26,12 +36,12 @@ public class Wall extends Design {
 	@Override
 	public boolean fitsHorizontally(int width) {
 		switch (expandBehaviour) {
-		case MergedRepeat:
-			if (width == 1) return false;
+		case MERGED:
+			if (width == 1)
+				return false;
 			return (width % (this.defaultWidth - 1)) == 1;
-		case Repeat:
+		case ADJACENT:
 			return (width % this.defaultWidth) == 0;
-		case None:
 		default:
 			return super.fitsHorizontally(width);
 		}
@@ -39,18 +49,16 @@ public class Wall extends Design {
 
 	@Override
 	public void getBlocks(DesignInstance instance, Map<BlockPos, PaletteBlockInfo> blocks) {
-		if (expandBehaviour == ExpandBehaviour.None) {
+		if (expandBehaviour == ExpandBehaviour.NONE) {
 			super.getBlocks(instance, blocks);
-			
-		} else {
-			boolean merge = expandBehaviour == ExpandBehaviour.MergedRepeat;
-			int instances = merge ? (instance.width - 1) / (defaultWidth - 1) : instance.width / defaultWidth;
-			int multiplierWidth = (merge ? defaultWidth - 1 : defaultWidth);
-			for (int i = 0; i < instances; i++) {
-				BlockPos shift = new BlockPos(i * multiplierWidth, 0, 0);
-				super.getBlocksShifted(instance, blocks, shift);
-			}
-
+			return;
+		}
+		boolean merge = expandBehaviour == ExpandBehaviour.MERGED;
+		int instances = merge ? (instance.width - 1) / (defaultWidth - 1) : instance.width / defaultWidth;
+		int multiplierWidth = (merge ? defaultWidth - 1 : defaultWidth);
+		for (int i = 0; i < instances; i++) {
+			BlockPos shift = new BlockPos(i * multiplierWidth, 0, 0);
+			super.getBlocksShifted(instance, blocks, shift);
 		}
 	}
 

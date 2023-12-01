@@ -8,264 +8,298 @@ import com.simibubi.mightyarchitect.control.design.DesignExporter;
 import com.simibubi.mightyarchitect.control.design.DesignLayer;
 import com.simibubi.mightyarchitect.control.design.DesignTheme;
 import com.simibubi.mightyarchitect.control.design.DesignType;
-import com.simibubi.mightyarchitect.control.phase.export.PhaseEditTheme;
-import com.simibubi.mightyarchitect.gui.widgets.Label;
-import com.simibubi.mightyarchitect.gui.widgets.ScrollInput;
-import com.simibubi.mightyarchitect.gui.widgets.SelectionScrollInput;
+import com.simibubi.mightyarchitect.foundation.utility.Color;
 
-public class DesignExporterScreen extends AbstractSimiScreen {
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.Mth;
 
-	public DesignExporterScreen() {
-		super();
+public class DesignExporterScreen extends SimpleScreen {
+
+	List<NewSuperIconButton> designLayerRow = new ArrayList<>();
+	List<NewSuperIconButton> designTypeRow = new ArrayList<>();
+	List<NewSuperIconButton> specialParameterRow = new ArrayList<>();
+
+	DesignLayer selectedLayer;
+	DesignType selectedType;
+	int selectedParameter;
+
+	Runnable deferredCallback;
+
+	private BlockPos anchorPos;
+
+	public DesignExporterScreen(BlockPos anchorPos, boolean resaving) {
+		this.anchorPos = anchorPos;
+		selectedLayer = DesignExporter.layer;
+		selectedType = DesignExporter.type;
+		selectedParameter = DesignExporter.designParameter;
 	}
-
-	private ScrollInput scrollAreaLayer;
-	private ScrollInput scrollAreaType;
-	private ScrollInput scrollAreaAdditionalData;
-	private Label labelTheme;
-	private Label labelLayer;
-	private Label labelType;
-	private Label labelAdditionalData;
-
-	private String additionalDataKey;
-	private int additionalDataValue;
 
 	@Override
-	public void init() {
-		super.init();
-		setWindowSize(ScreenResources.EXPORTER.width + 100, ScreenResources.EXPORTER.height + 50);
+	protected void renderWindow(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+		int w = 72 * Math.max(4, Math.max(designLayerRow.size(), designTypeRow.size())) + 4;
+		int y = topLeftY + 3;
+		MutableComponent header = Component.literal("Category");
+		GradientBoxRenderer.renderBox(ms, topLeftX + (128 - w / 2), y, w, 50, new Color(0, 0, 0, 50),
+			Color.TRANSPARENT_BLACK, Color.TRANSPARENT_BLACK, 1f);
+		drawCenteredString(ms, font, header, topLeftX + 128, y + 3, 0x9999aa);
 
-		DesignTheme theme = DesignExporter.theme;
-		DesignLayer layer = DesignExporter.layer;
-		DesignType type = DesignExporter.type;
+		y += 60;
+		header = Component.literal("Type of Design");
+		GradientBoxRenderer.renderBox(ms, topLeftX + (128 - w / 2), y, w, 50, new Color(0, 0, 0, 50),
+			Color.TRANSPARENT_BLACK, Color.TRANSPARENT_BLACK, 1f);
+		drawCenteredString(ms, font, header, topLeftX + 128, y + 3, 0x9999aa);
 
-		additionalDataValue = DesignExporter.designParameter;
+		if (!selectedType.hasAdditionalData())
+			return;
 
-		labelTheme = new Label(topLeftX + 96, topLeftY + 28, "").withShadow();
-		labelLayer = new Label(topLeftX + 96, topLeftY + 48, "").withShadow();
-		labelType = new Label(topLeftX + 96, topLeftY + 68, "").withShadow();
-		labelAdditionalData = new Label(topLeftX + 96, topLeftY + 88, "").withShadow();
-
-		additionalDataKey = "";
-		initScrollAreas(theme, layer, type);
-	}
-
-	private void initScrollAreas(DesignTheme theme, DesignLayer layer, DesignType type) {
-		widgets.clear();
-
-		List<DesignLayer> layers = theme.getLayers();
-		labelTheme.setText(theme.getDisplayName());
-
-		if (!layers.contains(layer))
-			layer = DesignLayer.Regular;
-
-		List<String> layerOptions = new ArrayList<>();
-		layers.forEach(l -> layerOptions.add(l.getDisplayName()));
-
-//		scrollAreaLayer = new ScrollArea(layerOptions, new IScrollAction() {
-//			@Override
-//			public void onScroll(int position) {
-//				labelLayer.text = layerOptions.get(position);
-//				initTypeScrollArea(theme, layers.get(position), DesignExporter.type);
-//			}
-//		});
-//		scrollAreaLayer.setBounds(topLeftX + 93, topLeftY + 45, 90, 14);
-//		scrollAreaLayer.setTitle("Style Layer");
-//		scrollAreaLayer.setState(layers.indexOf(layer));
-//		labelLayer.text = layer.getDisplayName();
-//		scrollAreas.add(scrollAreaLayer);
-
-		scrollAreaLayer = new SelectionScrollInput(topLeftX + 93, topLeftY + 45, 90, 14).forOptions(layerOptions)
-			.titled("Layer")
-			.writingTo(labelLayer)
-			.setState(layers.indexOf(layer))
-			.calling(position -> initTypeScrollArea(theme, layers.get(position), DesignExporter.type));
-
-		widgets.add(labelTheme);
-		widgets.add(labelLayer);
-		widgets.add(labelType);
-		widgets.add(labelAdditionalData);
-		widgets.add(scrollAreaLayer);
-
-		initTypeScrollArea(theme, layer, type);
-	}
-
-	protected void initTypeScrollArea(DesignTheme theme, DesignLayer layer, DesignType type) {
-		List<DesignType> types = new ArrayList<>(theme.getTypes());
-
-		// Roofs only in Roofing layer and vice versa
-		if (layer == DesignLayer.Roofing) {
-			types.retainAll(DesignType.roofTypes());
-		} else {
-			types.removeAll(DesignType.roofTypes());
-		}
-
-		// Fallback if previous type is not selectable anymore
-		if (!types.contains(type)) {
-			type = DesignType.WALL;
-			if (layer == DesignLayer.Roofing) {
-				for (DesignType dt : DesignType.roofTypes()) {
-					if (types.contains(dt)) {
-						type = dt;
-						break;
-					}
-				}
-			}
-		}
-
-		// Prepare options
-		List<String> typeOptions = new ArrayList<>();
-		types.forEach(t -> typeOptions.add(t.getDisplayName()));
-
-		if (widgets.contains(scrollAreaType))
-			widgets.remove(scrollAreaType);
-
-//		scrollAreaType = new ScrollArea(typeOptions, new IScrollAction() {
-//			@Override
-//			public void onScroll(int position) {
-//				labelType.text = typeOptions.get(position);
-//				DesignExporter.type = types.get(position);
-//				initAdditionalDataScrollArea(types.get(position));
-//			}
-//		});
-//		scrollAreaType.setBounds(topLeftX + 93, topLeftY + 65, 90, 14);
-//		scrollAreaType.setTitle("Design Type");
-//		scrollAreaType.setState(types.indexOf(type));
-//		labelType.text = type.getDisplayName();
-
-		scrollAreaType = new SelectionScrollInput(topLeftX + 93, topLeftY + 65, 90, 14).forOptions(typeOptions)
-			.titled("Design Type")
-			.writingTo(labelType)
-			.setState(types.indexOf(type))
-			.calling(position -> {
-				DesignExporter.type = types.get(position);
-				initAdditionalDataScrollArea(types.get(position));
-			});
-
-		widgets.add(scrollAreaType);
-		initAdditionalDataScrollArea(type);
-	}
-
-	private void initAdditionalDataScrollArea(DesignType type) {
-		if (widgets.contains(scrollAreaAdditionalData))
-			widgets.remove(scrollAreaAdditionalData);
-
-		if (type.hasAdditionalData()) {
-
-			additionalDataKey = type.getAdditionalDataName();
-
-			if (type.hasSizeData()) {
-
-				if (type == DesignType.ROOF) {
-					if (additionalDataValue % 2 == 0)
-						additionalDataValue++;
-				}
-				if (additionalDataValue < type.getMinSize())
-					additionalDataValue = type.getMinSize();
-				if (additionalDataValue > type.getMaxSize())
-					additionalDataValue = type.getMaxSize();
-				labelAdditionalData.setText(additionalDataValue + "m");
-
-				if (type == DesignType.ROOF) {
-					int min = (type.getMinSize() - 1) / 2;
-					int max = (type.getMaxSize() - 1) / 2;
-
-					scrollAreaAdditionalData = new ScrollInput(topLeftX + 93, topLeftY + 85, 90, 14).withRange(min, max)
-						.setState((additionalDataValue - 1) / 2)
-						.writingTo(labelAdditionalData)
-						.calling(position -> {
-							additionalDataValue = position * 2 + 1;
-							labelAdditionalData.setText(position * 2 + 1 + "m");
-						});
-					labelAdditionalData.setText(additionalDataValue + "m");
-
-				} else {
-					int min = type.getMinSize();
-					int max = type.getMaxSize();
-
-					scrollAreaAdditionalData =
-						new ScrollInput(topLeftX + 93, topLeftY + 85, 90, 14).withRange(min, max + 1)
-							.setState(additionalDataValue)
-							.writingTo(labelAdditionalData)
-							.calling(position -> {
-								additionalDataValue = position;
-								labelAdditionalData.setText(position + "m");
-							});
-				}
-
-			} else if (type.hasSubtypes()) {
-				if (additionalDataValue == -1)
-					additionalDataValue = 0;
-
-				List<String> subtypeOptions = type.getSubtypeOptions();
-				if (additionalDataValue >= subtypeOptions.size())
-					additionalDataValue = 0;
-
-				labelAdditionalData.setText(subtypeOptions.get(additionalDataValue));
-				scrollAreaAdditionalData =
-					new SelectionScrollInput(topLeftX + 93, topLeftY + 85, 90, 14).forOptions(subtypeOptions)
-						.writingTo(labelAdditionalData)
-						.setState(additionalDataValue)
-						.calling(p -> additionalDataValue = p);
-			}
-
-			scrollAreaAdditionalData.titled(additionalDataKey);
-			widgets.add(scrollAreaAdditionalData);
-
-		} else {
-
-			additionalDataValue = -1;
-			additionalDataKey = "";
-			labelAdditionalData.setText("");
-			scrollAreaAdditionalData = null;
-
-		}
+		y += 60;
+		header = Component.literal(selectedType.getAdditionalDataName());
+		GradientBoxRenderer.renderBox(ms, topLeftX + (128 - w / 2), y, w, specialParameterRow.size() > 10 ? 56 : 36,
+			new Color(0, 0, 0, 50), Color.TRANSPARENT_BLACK, Color.TRANSPARENT_BLACK, 1f);
+		drawCenteredString(ms, font, header, topLeftX + 128, y + 3, 0x9999aa);
 	}
 
 	@Override
 	public void tick() {
 		super.tick();
+		if (deferredCallback != null) {
+			deferredCallback.run();
+			deferredCallback = null;
+		}
 	}
 
 	@Override
-	protected void renderWindow(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-		ScreenResources.EXPORTER.draw(ms, this, topLeftX, topLeftY);
+	protected void init() {
+		setWindowSize(256, 200);
+		super.init();
 
-		ms.pushPose();
-		ms.translate(0, 0, -200);
-		ms.translate((this.width - this.sWidth) / 2 + 150, 120, 0);
-		ms.scale(10, 10, 10);
-		GuiGameElement.of(minecraft.player.getMainHandItem())
-			.rotate(-1, 0, 20)
-			.render(ms);
-		ms.popPose();
+		widgets.removeAll(designLayerRow);
+		designLayerRow.clear();
 
-		int color = ScreenResources.FONT_COLOR;
-		font.draw(ms, "Export custom Designs", topLeftX + 10, topLeftY + 10, color);
-		font.draw(ms, "Theme", topLeftX + 10, topLeftY + 28, color);
-		font.draw(ms, "Building Layer", topLeftX + 10, topLeftY + 48, color);
-		font.draw(ms, "Design Type", topLeftX + 10, topLeftY + 68, color);
-		font.draw(ms, additionalDataKey, topLeftX + 10, topLeftY + 88, color);
-	}
-
-	@Override
-	public void removed() {
 		DesignTheme theme = DesignExporter.theme;
-		DesignExporter.layer = theme.getLayers()
-			.get(scrollAreaLayer.getState());
+		List<DesignLayer> layers = theme.getLayers();
 
-		List<DesignType> types = new ArrayList<>(theme.getTypes());
+		int buttonWidth = 68;
+		int y = topLeftY + 20;
+		int x = topLeftX + sWidth / 2;
+		x -= (layers.size() * (buttonWidth + 4) - 4) / 2;
 
-		// Roofs only in Roofing layer and vice versa
-		if (DesignExporter.layer == DesignLayer.Roofing) {
-			types.retainAll(DesignType.roofTypes());
-		} else {
-			types.removeAll(DesignType.roofTypes());
+		for (DesignLayer layer : layers) {
+			NewSuperIconButton button =
+				new NewSuperIconButton(x, y, buttonWidth, layer.getIcon(), Component.literal(layer.getDisplayName()));
+			if (layer == selectedLayer)
+				button.highlighted = true;
+
+			button.setCallback((mx, my) -> {
+				if (selectedLayer == layer)
+					return;
+				selectedLayer = layer;
+				for (NewSuperIconButton other : designLayerRow)
+					other.highlighted = other == button;
+				deferredCallback = this::initTypeRow;
+			});
+
+			designLayerRow.add(button);
+			widgets.add(button);
+			x += buttonWidth + 4;
 		}
 
-		DesignExporter.type = types.get(scrollAreaType.getState());
-		DesignExporter.designParameter = additionalDataValue;
-		PhaseEditTheme.setVisualization(PhaseEditTheme.selectedDesign);
+		initTypeRow();
+	}
+
+	private void initTypeRow() {
+		widgets.removeAll(designTypeRow);
+		designTypeRow.clear();
+
+		DesignTheme theme = DesignExporter.theme;
+		List<DesignType> types = new ArrayList<>(theme.getTypes());
+		if (selectedLayer == DesignLayer.ROOFING)
+			types.retainAll(DesignType.roofTypes());
+		else
+			types.removeAll(DesignType.roofTypes());
+
+		// Fallback if previous type is not selectable anymore
+		if (!types.contains(selectedType)) {
+			selectedType = DesignType.WALL;
+			if (selectedLayer == DesignLayer.ROOFING) {
+				for (DesignType dt : DesignType.roofTypes()) {
+					if (!types.contains(dt))
+						continue;
+					selectedType = dt;
+					break;
+				}
+			}
+		}
+
+		int buttonWidth = 68;
+		int y = topLeftY + 80;
+		int x = topLeftX + sWidth / 2;
+		x -= (types.size() * (buttonWidth + 4) - 4) / 2;
+
+		for (DesignType type : types) {
+			NewSuperIconButton button =
+				new NewSuperIconButton(x, y, buttonWidth, type.getIcon(), Component.literal(type.getDisplayName()));
+			if (type == selectedType)
+				button.highlighted = true;
+
+			button.setCallback((mx, my) -> {
+				if (selectedType == type)
+					return;
+				selectedType = type;
+				for (NewSuperIconButton other : designTypeRow)
+					other.highlighted = other == button;
+				deferredCallback = this::initParamsRow;
+			});
+
+			designTypeRow.add(button);
+			widgets.add(button);
+			x += buttonWidth + 4;
+		}
+
+		initParamsRow();
+	}
+
+	private void initParamsRow() {
+		widgets.removeAll(specialParameterRow);
+		specialParameterRow.clear();
+
+		if (!selectedType.hasAdditionalData())
+			return;
+
+		selectedParameter = Mth.clamp(selectedParameter, selectedType.getMinSize(), selectedType.getMaxSize());
+		int increment = 1;
+		if (selectedType == DesignType.GABLE_ROOF) {
+			increment = 2;
+			if (selectedParameter % 2 == 0)
+				selectedParameter++;
+		}
+
+		List<Integer> validOptions = new ArrayList<>();
+		List<Component> labels = new ArrayList<>();
+		for (int i = selectedType.getMinSize(); i <= selectedType.getMaxSize(); i += increment) {
+			validOptions.add(i);
+			labels.add(Component.literal(selectedType.formatData(i)));
+		}
+
+		int maxWidth = labels.stream()
+			.mapToInt(font::width)
+			.max()
+			.orElse(0);
+		int buttonWidth = maxWidth + 9;
+		int y = topLeftY + 140;
+		int rowWidth = ((labels.size() > 10 ? labels.size() / 2 : labels.size()) * (buttonWidth + 4) - 4);
+		int x = topLeftX + 128 - rowWidth / 2;
+
+		for (int i = 0; i < labels.size(); i++) {
+			if (labels.size() > 10 && i == labels.size() / 2) {
+				y += 20;
+				x = topLeftX + 128 - rowWidth / 2;
+			}
+
+			Component label = labels.get(i);
+			NewSuperIconButton button = new NewSuperIconButton(x, y, buttonWidth, null, label);
+			int parameter = validOptions.get(i)
+				.intValue();
+			if (parameter == selectedParameter)
+				button.highlighted = true;
+
+			button.setCallback((mx, my) -> {
+				if (parameter == selectedParameter)
+					return;
+				selectedParameter = parameter;
+				for (NewSuperIconButton other : specialParameterRow)
+					other.highlighted = other == button;
+			});
+
+			specialParameterRow.add(button);
+			widgets.add(button);
+			x += buttonWidth + 4;
+		}
+	}
+
+//	private void initAdditionalDataScrollArea(DesignType type) {
+//		if (widgets.contains(scrollAreaAdditionalData))
+//			widgets.remove(scrollAreaAdditionalData);
+//
+//		if (type.hasAdditionalData()) {
+//
+//			additionalDataKey = type.getAdditionalDataName();
+//
+//			if (type.hasSizeData()) {
+//
+//				if (type == DesignType.ROOF) {
+//					if (additionalDataValue % 2 == 0)
+//						additionalDataValue++;
+//				}
+//				if (additionalDataValue < type.getMinSize())
+//					additionalDataValue = type.getMinSize();
+//				if (additionalDataValue > type.getMaxSize())
+//					additionalDataValue = type.getMaxSize();
+//				labelAdditionalData.setText(additionalDataValue + "m");
+//
+//				if (type == DesignType.ROOF) {
+//					int min = (type.getMinSize() - 1) / 2;
+//					int max = (type.getMaxSize() - 1) / 2;
+//
+//					scrollAreaAdditionalData = new ScrollInput(topLeftX + 93, topLeftY + 85, 90, 14).withRange(min, max)
+//						.setState((additionalDataValue - 1) / 2)
+//						.writingTo(labelAdditionalData)
+//						.calling(position -> {
+//							additionalDataValue = position * 2 + 1;
+//							labelAdditionalData.setText(position * 2 + 1 + "m");
+//						});
+//					labelAdditionalData.setText(additionalDataValue + "m");
+//
+//				} else {
+//					int min = type.getMinSize();
+//					int max = type.getMaxSize();
+//
+//					scrollAreaAdditionalData =
+//						new ScrollInput(topLeftX + 93, topLeftY + 85, 90, 14).withRange(min, max + 1)
+//							.setState(additionalDataValue)
+//							.writingTo(labelAdditionalData)
+//							.calling(position -> {
+//								additionalDataValue = position;
+//								labelAdditionalData.setText(position + "m");
+//							});
+//				}
+//
+//			} else if (type.hasSubtypes()) {
+//				if (additionalDataValue == -1)
+//					additionalDataValue = 0;
+//
+//				List<String> subtypeOptions = type.getSubtypeOptions();
+//				if (additionalDataValue >= subtypeOptions.size())
+//					additionalDataValue = 0;
+//
+//				labelAdditionalData.setText(subtypeOptions.get(additionalDataValue));
+//				scrollAreaAdditionalData =
+//					new SelectionScrollInput(topLeftX + 93, topLeftY + 85, 90, 14).forOptions(subtypeOptions)
+//						.writingTo(labelAdditionalData)
+//						.setState(additionalDataValue)
+//						.calling(p -> additionalDataValue = p);
+//			}
+//
+//			scrollAreaAdditionalData.titled(additionalDataKey);
+//			widgets.add(scrollAreaAdditionalData);
+//
+//		} else {
+//
+//			additionalDataValue = -1;
+//			additionalDataKey = "";
+//			labelAdditionalData.setText("");
+//			scrollAreaAdditionalData = null;
+//
+//		}
+//	}
+	@Override
+	public void removed() {
+		DesignExporter.layer = selectedLayer;
+		DesignExporter.type = selectedType;
+		DesignExporter.designParameter = selectedParameter;
+		DesignExporter.exportDesign(minecraft.level, anchorPos);
 	}
 
 }

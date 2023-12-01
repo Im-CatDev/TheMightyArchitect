@@ -11,7 +11,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 
-public class TextInputPromptScreen extends AbstractSimiScreen {
+public class TextInputPromptScreen extends SimpleScreen {
 
 	private Consumer<String> callback;
 	private Consumer<String> abortCallback;

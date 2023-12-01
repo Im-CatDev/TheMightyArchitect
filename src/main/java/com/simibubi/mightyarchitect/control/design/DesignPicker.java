@@ -51,10 +51,10 @@ public class DesignPicker {
 				if (room != stack.highest())
 					return;
 
-				DesignLayer roofLayer = DesignLayer.Roofing;
+				DesignLayer roofLayer = DesignLayer.ROOFING;
 
 				switch (room.roofType) {
-				case ROOF:
+				case GABLE_ROOF:
 					if (stack instanceof CylinderStack) {
 						DesignHelper.addTowerRoof(provider, designList, theme, roofLayer, stack, false);
 						break;

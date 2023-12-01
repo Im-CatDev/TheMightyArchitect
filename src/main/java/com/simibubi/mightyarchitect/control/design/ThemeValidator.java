@@ -48,7 +48,7 @@ public class ThemeValidator {
 				if (!exists(query)) {
 					if (type == DesignType.FACADE)
 						continue;
-					if (type == DesignType.CORNER && layer == DesignLayer.Open)
+					if (type == DesignType.CORNER && layer == DesignLayer.ARCHWAYS)
 						continue;
 
 					alert(layer.getDisplayName() + " " + type.getDisplayName() + " has no designs!");
@@ -72,7 +72,7 @@ public class ThemeValidator {
 				case NONE:
 					alert("Found design with no type in layer " + layer.getDisplayName() + "!");
 					break;
-				case ROOF:
+				case GABLE_ROOF:
 				case FLAT_ROOF:
 					for (int span = stats.MinGableRoof; span <= stats.MaxGableRoof; span += 2) {
 						DesignQuery roofQuery = new DesignQuery(theme, layer, type).withWidth(span);
@@ -101,14 +101,14 @@ public class ThemeValidator {
 								+ " are missing heights " + glue(missingHeights));
 					}
 					break;
-				case TOWER_FLAT_ROOF:
+				case TOWER_CAP:
 					for (int radius = stats.MinTowerRadius; radius <= stats.MaxTowerRadius; radius++) {
 						DesignQuery towerQuery = new DesignQuery(theme, layer, type).withWidth(radius * 2 + 1);
 						if (!exists(towerQuery))
 							alert("No " + type.getDisplayName() + " has a radius of " + radius + "m.");
 					}
 					break;
-				case TOWER_ROOF:
+				case TOWER_CONE:
 					for (int radius = stats.MinTowerRadius; radius <= stats.MaxConicalRoofRadius; radius++) {
 						DesignQuery towerQuery = new DesignQuery(theme, layer, type).withWidth(radius * 2 + 1);
 						if (!exists(towerQuery))

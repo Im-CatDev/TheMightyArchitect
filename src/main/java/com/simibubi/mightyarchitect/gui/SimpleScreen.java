@@ -1,22 +1,24 @@
 package com.simibubi.mightyarchitect.gui;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.mightyarchitect.foundation.utility.Lang;
-import com.simibubi.mightyarchitect.gui.widgets.AbstractSimiWidget;
+import com.simibubi.mightyarchitect.gui.widgets.SimpleWidget;
 
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 
-public abstract class AbstractSimiScreen extends Screen {
+public abstract class SimpleScreen extends Screen {
 
 	protected int sWidth, sHeight;
 	protected int topLeftX, topLeftY;
 	protected List<AbstractWidget> widgets;
 
-	protected AbstractSimiScreen() {
+	protected SimpleScreen() {
 		super(Lang.empty());
 		widgets = new ArrayList<>();
 	}
@@ -42,9 +44,12 @@ public abstract class AbstractSimiScreen extends Screen {
 	@Override
 	public boolean mouseClicked(double x, double y, int button) {
 		boolean result = false;
-		for (AbstractWidget widget : widgets) {
-			if (widget.mouseClicked(x, y, button))
+		for (Iterator<AbstractWidget> iterator = widgets.iterator(); iterator.hasNext();) {
+			AbstractWidget widget = iterator.next();
+			if (widget.mouseClicked(x, y, button)) {
 				result = true;
+				break;				
+			}
 		}
 		return result;
 	}
@@ -64,8 +69,9 @@ public abstract class AbstractSimiScreen extends Screen {
 			if (widget.charTyped(character, code))
 				return true;
 		}
-		if (character == 'e')
-			onClose();
+		if (!(getFocused() instanceof EditBox))
+			if (character == 'e')
+				onClose();
 		return super.charTyped(character, code);
 	}
 
@@ -94,9 +100,9 @@ public abstract class AbstractSimiScreen extends Screen {
 		for (AbstractWidget widget : widgets) {
 			if (!widget.isHoveredOrFocused())
 				continue;
-			if (widget instanceof AbstractSimiWidget && !((AbstractSimiWidget) widget).getToolTip()
+			if (widget instanceof SimpleWidget && !((SimpleWidget) widget).getToolTip()
 				.isEmpty())
-				renderComponentTooltip(ms, ((AbstractSimiWidget) widget).getToolTip(), mouseX, mouseY);
+				renderComponentTooltip(ms, ((SimpleWidget) widget).getToolTip(), mouseX, mouseY);
 		}
 	}
 

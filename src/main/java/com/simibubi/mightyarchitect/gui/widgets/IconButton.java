@@ -7,9 +7,9 @@ import com.simibubi.mightyarchitect.gui.ScreenResources;
 
 import net.minecraft.network.chat.Component;
 
-public class IconButton extends AbstractSimiWidget {
+public class IconButton extends SimpleWidget {
 
-	private ScreenResources icon;
+	protected ScreenResources icon;
 	protected boolean pressed;
 
 	public IconButton(int x, int y, ScreenResources icon) {

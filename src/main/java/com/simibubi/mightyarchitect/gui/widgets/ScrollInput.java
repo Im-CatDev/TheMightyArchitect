@@ -8,7 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-public class ScrollInput extends AbstractSimiWidget {
+public class ScrollInput extends SimpleWidget {
 
 	protected Consumer<Integer> onScroll;
 	protected int state;

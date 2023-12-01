@@ -19,6 +19,7 @@ import com.simibubi.mightyarchitect.control.design.DesignExporter;
 import com.simibubi.mightyarchitect.control.design.DesignTheme;
 import com.simibubi.mightyarchitect.control.design.ThemeStorage;
 import com.simibubi.mightyarchitect.control.palette.PaletteDefinition;
+import com.simibubi.mightyarchitect.control.palette.PaletteEditScreen;
 import com.simibubi.mightyarchitect.control.palette.PaletteStorage;
 import com.simibubi.mightyarchitect.control.phase.ArchitectPhases;
 import com.simibubi.mightyarchitect.control.phase.IArchitectPhase;
@@ -28,7 +29,6 @@ import com.simibubi.mightyarchitect.foundation.utility.FilesHelper;
 import com.simibubi.mightyarchitect.foundation.utility.Keyboard;
 import com.simibubi.mightyarchitect.foundation.utility.Lang;
 import com.simibubi.mightyarchitect.gui.ArchitectMenuScreen;
-import com.simibubi.mightyarchitect.gui.DesignExporterScreen;
 import com.simibubi.mightyarchitect.gui.PalettePickerScreen;
 import com.simibubi.mightyarchitect.gui.ScreenHelper;
 import com.simibubi.mightyarchitect.gui.TextInputPromptScreen;
@@ -230,10 +230,6 @@ public class ArchitectManager {
 		enterPhase(ArchitectPhases.EditingThemes);
 	}
 
-	public static void changeExportedDesign() {
-		ScreenHelper.open(new DesignExporterScreen());
-	}
-
 	// Phases
 
 	public static boolean inPhase(ArchitectPhases phase) {
@@ -316,7 +312,7 @@ public class ArchitectManager {
 		if (Minecraft.getInstance().screen != null)
 			return;
 
-		if (Keybinds.ACTIVATE.matches(event.getKey()) && pressed) {
+		if (Keybinds.ACTIVATE.matches(event.getKey()) && pressed && !inPhase(ArchitectPhases.CreatingPalette)) {
 			if (!menu.isFocused())
 				openMenu();
 			return;

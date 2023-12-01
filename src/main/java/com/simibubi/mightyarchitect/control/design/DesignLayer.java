@@ -3,23 +3,26 @@ package com.simibubi.mightyarchitect.control.design;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import com.simibubi.mightyarchitect.gui.ScreenResources;
 
 public enum DesignLayer {
 	
-	Foundation("foundation", "Foundation"),
-	Regular("regular", "Regular"),
-	Open("open", "Open Arcs"),
-	Special("special", "Special"),
+	FOUNDATION("foundation", "Foundation", ScreenResources.ICON_LAYER_FOUNDATION),
+	REGULAR("regular", "Regular", ScreenResources.ICON_LAYER_REGULAR),
+	ARCHWAYS("open", "Archways", ScreenResources.ICON_LAYER_OPEN),
+	SPECIAL("special", "Special", ScreenResources.ICON_LAYER_SPECIAL),
 	
-	None("none", "None"),
-	Roofing("roofing", "Roofing");
+	NONE("none", "None", ScreenResources.ICON_NONE),
+	ROOFING("roofing", "Roofing", ScreenResources.ICON_LAYER_ROOF);
 	
 	private String filePath;
 	private String displayName;
+	private ScreenResources icon;
 	
-	private DesignLayer(String filePath, String displayName) {
+	private DesignLayer(String filePath, String displayName, ScreenResources icon) {
 		this.filePath = filePath;
 		this.displayName = displayName;
+		this.icon = icon;
 	}
 	
 	public String getFilePath() {
@@ -30,12 +33,16 @@ public enum DesignLayer {
 		return displayName;
 	}
 	
+	public ScreenResources getIcon() {
+		return icon;
+	}
+	
 	public boolean isExterior() {
-		return this == Open;
+		return this == ARCHWAYS;
 	}
 	
 	public static List<DesignLayer> defaults() {
-		return ImmutableList.of(Roofing);
+		return ImmutableList.of(ROOFING);
 	}
 	
 	

@@ -117,4 +117,32 @@ public class Cuboid {
 		return new AABB(getOrigin(), getOrigin().offset(getSize()));
 	}
 
+	public void include(BlockPos pos) {
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
+
+		if (x < this.x) {
+			this.width += this.x - x;
+			this.x = x;
+		}
+		if (y < this.y) {
+			this.height += this.y - y;
+			this.y = y;
+		}
+		if (z < this.z) {
+			this.length += this.z - z;
+			this.z = z;
+		}
+
+		BlockPos maxPos = this.getOrigin()
+			.offset(this.getSize());
+		if (x >= maxPos.getX())
+			this.width = x - this.x + 1;
+		if (y >= maxPos.getY())
+			this.height = y - this.y + 1;
+		if (z >= maxPos.getZ())
+			this.length = z - this.z + 1;
+	}
+
 }
