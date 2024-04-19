@@ -45,13 +45,13 @@ public class DesignExporterScreen extends SimpleScreen {
 		MutableComponent header = Component.literal("Category");
 		GradientBoxRenderer.renderBox(ms, topLeftX + (128 - w / 2), y, w, 50, new Color(0, 0, 0, 50),
 			Color.TRANSPARENT_BLACK, Color.TRANSPARENT_BLACK, 1f);
-		drawCenteredString(ms, font, header, topLeftX + 128, y + 3, 0x9999aa);
+		graphics.drawCenteredString(font, header, topLeftX + 128, y + 3, 0x9999aa);
 
 		y += 60;
 		header = Component.literal("Type of Design");
 		GradientBoxRenderer.renderBox(ms, topLeftX + (128 - w / 2), y, w, 50, new Color(0, 0, 0, 50),
 			Color.TRANSPARENT_BLACK, Color.TRANSPARENT_BLACK, 1f);
-		drawCenteredString(ms, font, header, topLeftX + 128, y + 3, 0x9999aa);
+		graphics.drawCenteredString(font, header, topLeftX + 128, y + 3, 0x9999aa);
 
 		if (!selectedType.hasAdditionalData())
 			return;
@@ -60,7 +60,7 @@ public class DesignExporterScreen extends SimpleScreen {
 		header = Component.literal(selectedType.getAdditionalDataName());
 		GradientBoxRenderer.renderBox(ms, topLeftX + (128 - w / 2), y, w, specialParameterRow.size() > 10 ? 56 : 36,
 			new Color(0, 0, 0, 50), Color.TRANSPARENT_BLACK, Color.TRANSPARENT_BLACK, 1f);
-		drawCenteredString(ms, font, header, topLeftX + 128, y + 3, 0x9999aa);
+		graphics.drawCenteredString(font, header, topLeftX + 128, y + 3, 0x9999aa);
 	}
 
 	@Override

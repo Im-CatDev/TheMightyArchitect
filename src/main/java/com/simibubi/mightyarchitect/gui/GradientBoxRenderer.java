@@ -1,12 +1,13 @@
 package com.simibubi.mightyarchitect.gui;
 
+import org.joml.Matrix4f;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Matrix4f;
 import com.simibubi.mightyarchitect.foundation.utility.Color;
 
 import net.minecraft.client.renderer.GameRenderer;
@@ -39,7 +40,6 @@ public class GradientBoxRenderer {
 		*
 		* */
 		
-		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.setShader(GameRenderer::getPositionColorShader);
@@ -105,7 +105,6 @@ public class GradientBoxRenderer {
 		tessellator.end();
 
 		RenderSystem.disableBlend();
-		RenderSystem.enableTexture();
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.simibubi.mightyarchitect.control.palette;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Locale;
 
@@ -19,18 +20,19 @@ import com.simibubi.mightyarchitect.gui.GuiGameElement;
 import com.simibubi.mightyarchitect.gui.ScreenResources;
 import com.simibubi.mightyarchitect.gui.SimpleScreen;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.CrossCollisionBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class PaletteEditScreen extends SimpleScreen {
 
@@ -57,6 +59,9 @@ public class PaletteEditScreen extends SimpleScreen {
 
 	public PaletteEditScreen(PaletteDefinition palette) {
 		this.palette = palette;
+
+		CreativeModeTabs.tryRebuildTabContents(Minecraft.getInstance().player.connection.enabledFeatures(), false,
+			Minecraft.getInstance().level.registryAccess());
 	}
 
 	@Override
@@ -66,25 +71,25 @@ public class PaletteEditScreen extends SimpleScreen {
 				btn.highlighted = false;
 			selectedEntry = null;
 			newMappings = null;
-			searchBox.setFocus(false);
+			searchBox.setFocused(false);
 			searchBox.setVisible(false);
 			nameBox.setVisible(true);
 			return true;
 		}
 
 		if (selectedEntry == null) {
-			if (isHoveringTinyButton(x, y, topLeftX - 23 + 270, nameBox.y - 3)) {
+			if (isHoveringTinyButton(x, y, topLeftX - 23 + 270, nameBox.getY() - 3)) {
 				minecraft.setScreen(null);
 				return true;
 			}
 
-			if (isHoveringTinyButton(x, y, topLeftX - 23 + 286, nameBox.y - 3)) {
+			if (isHoveringTinyButton(x, y, topLeftX - 23 + 286, nameBox.getY() - 3)) {
 				ArchitectManager.finishPalette(nameBox.getValue());
 				minecraft.setScreen(null);
 				return true;
 			}
 
-			if (isHoveringTinyButton(x, y, topLeftX - 23 + 302, nameBox.y - 3)) {
+			if (isHoveringTinyButton(x, y, topLeftX - 23 + 302, nameBox.getY() - 3)) {
 				ArchitectManager.enterPhase(ArchitectPhases.Previewing);
 				minecraft.setScreen(null);
 				return true;
@@ -121,7 +126,7 @@ public class PaletteEditScreen extends SimpleScreen {
 		MightyClient.renderer.update();
 		selectedEntry = null;
 		newMappings = null;
-		searchBox.setFocus(false);
+		searchBox.setFocused(false);
 		searchBox.setVisible(false);
 		nameBox.setVisible(true);
 		return true;
@@ -164,25 +169,26 @@ public class PaletteEditScreen extends SimpleScreen {
 			focusBox = false;
 			if (searchBox.isFocused())
 				return;
-			searchBox.changeFocus(true);
+			searchBox.setFocused(true);
 			setFocused(searchBox);
 		}
 	}
 
 	@Override
-	protected void renderWindow(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+	protected void renderWindow(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		PoseStack ms = graphics.pose();
 		int x = topLeftX - 23;
 		int y = topLeftY + 170;
 
 		bgBox(ms, x - 10, y - 8, 324, 80, BLACK_50);
 
-		font.draw(ms, Component.literal("Palette Entries"), x, y - 2, 0xeeeeee);
+		graphics.drawString(font, Component.literal("Palette Entries"), x, y - 2, 0xeeeeee, false);
 
 		for (Palette key : Palette.values()) {
 			if (!buttons.containsKey(key) || !buttons.get(key)
 				.isHoveredOrFocused())
 				continue;
-			drawCenteredString(ms, font, key.getDisplayName(), topLeftX + 128, y - 2, 0x9999aa);
+			graphics.drawCenteredString(font, key.getDisplayName(), topLeftX + 128, y - 2, 0x9999aa);
 			break;
 		}
 
@@ -190,37 +196,39 @@ public class PaletteEditScreen extends SimpleScreen {
 		int searchHeight = searchBox.getHeight();
 
 		if (selectedEntry == null) {
-			bgBox(ms, x + 121, nameBox.y - 1, nameBox.getWidth() + 24, nameBox.getHeight() + 1, BLACK_150);
-			bgBox(ms, x + 272, nameBox.y - 1, searchHeight + 1, searchHeight + 1, BLACK_120);
-			bgBox(ms, x + 288, nameBox.y - 1, searchHeight + 1, searchHeight + 1, BLACK_120);
-			bgBox(ms, x + 304, nameBox.y - 1, searchHeight + 1, searchHeight + 1, BLACK_120);
+			int nameBoxY = nameBox.getY();
+			bgBox(ms, x + 121, nameBoxY - 1, nameBox.getWidth() + 24, nameBox.getHeight() + 1, BLACK_150);
+			bgBox(ms, x + 272, nameBoxY - 1, searchHeight + 1, searchHeight + 1, BLACK_120);
+			bgBox(ms, x + 288, nameBoxY - 1, searchHeight + 1, searchHeight + 1, BLACK_120);
+			bgBox(ms, x + 304, nameBoxY - 1, searchHeight + 1, searchHeight + 1, BLACK_120);
 
-			ScreenResources.I8_EYE.draw(ms, this, x + 273, nameBox.y);
-			ScreenResources.I8_FLOPPY.draw(ms, this, x + 289, nameBox.y);
-			ScreenResources.I8_BIN.draw(ms, this, x + 305, nameBox.y);
+			ScreenResources.I8_EYE.draw(graphics, x + 273, nameBoxY);
+			ScreenResources.I8_FLOPPY.draw(graphics, x + 289, nameBoxY);
+			ScreenResources.I8_BIN.draw(graphics, x + 305, nameBoxY);
 
-			if (isHoveringTinyButton(mouseX, mouseY, x + 270, nameBox.y - 3))
-				renderTooltip(ms, Lang.text("Preview")
+			if (isHoveringTinyButton(mouseX, mouseY, x + 270, nameBoxY - 3))
+				graphics.renderTooltip(font, Lang.text("Preview")
 					.component(), mouseX, mouseY);
 
-			if (isHoveringTinyButton(mouseX, mouseY, x + 286, nameBox.y - 3))
-				renderTooltip(ms, Lang.text("Save")
+			if (isHoveringTinyButton(mouseX, mouseY, x + 286, nameBoxY - 3))
+				graphics.renderTooltip(font, Lang.text("Save")
 					.component(), mouseX, mouseY);
 
-			if (isHoveringTinyButton(mouseX, mouseY, x + 302, nameBox.y - 3))
-				renderTooltip(ms, Lang.text("Discard")
+			if (isHoveringTinyButton(mouseX, mouseY, x + 302, nameBoxY - 3))
+				graphics.renderTooltip(font, Lang.text("Discard")
 					.component(), mouseX, mouseY);
 
 			return;
 		}
 
+		int searchBoxY = searchBox.getY();
 		bgBox(ms, x - 10, y - 100, 324, 80, BLACK_50);
-		bgBox(ms, x - 10, searchBox.y - 1, searchWidth + 24, searchHeight + 1, BLACK_150);
-		bgBox(ms, x + searchWidth + 22, searchBox.y - 1, 193, searchHeight + 1, BLACK_150);
-		bgBox(ms, x + 303, searchBox.y - 1, searchHeight + 2, searchHeight + 1, BLACK_120);
+		bgBox(ms, x - 10, searchBoxY - 1, searchWidth + 24, searchHeight + 1, BLACK_150);
+		bgBox(ms, x + searchWidth + 22, searchBoxY - 1, 193, searchHeight + 1, BLACK_150);
+		bgBox(ms, x + 303, searchBoxY - 1, searchHeight + 2, searchHeight + 1, BLACK_120);
 
 		if (isHoveringTinyButton(mouseX, mouseY, topLeftX + 278, topLeftY + 46))
-			renderTooltip(ms, Lang.text("Cancel")
+			graphics.renderTooltip(font, Lang.text("Cancel")
 				.component(), mouseX, mouseY);
 
 		PaletteBlockShape shape = getCurrentlyRequiredShape();
@@ -228,19 +236,20 @@ public class PaletteEditScreen extends SimpleScreen {
 		if (shape != PaletteBlockShape.REGULAR)
 			header = Component.literal("Requires additional for " + shape.name()
 				.toLowerCase(Locale.ROOT) + " shape");
-		font.drawShadow(ms, Lang.text("x")
-			.component(), x + 306, searchBox.y - 1, 0xeeeeee);
-		font.draw(ms, header, x + searchWidth + 30, searchBox.y, 0xeeeeee);
+		graphics.drawString(font, Lang.text("x")
+			.component(), x + 306, searchBox.getY() - 1, 0xeeeeee);
+		graphics.drawString(font, header, x + searchWidth + 30, searchBox.getY(), 0xeeeeee, false);
 
 		if (searchBox.getValue()
 			.isEmpty())
-			font.draw(ms, Component.literal("Search Blocks..."), searchBox.x, searchBox.y, 0x888888);
+			graphics.drawString(font, Component.literal("Search Blocks..."), searchBox.getX(), searchBox.getY(),
+				0x888888, false);
 
 		if (itemPicker.isEmpty())
 			return;
 
 		int cols = 17;
-		float currentScroll = itemScroll.getValue(minecraft.getDeltaFrameTime());
+		float currentScroll = itemScroll.getValue(partialTicks);
 		int startRow = Math.max(0, Mth.floor(currentScroll) - 1);
 
 		ms.pushPose();
@@ -269,9 +278,9 @@ public class PaletteEditScreen extends SimpleScreen {
 
 				ms.translate(0, 0, 200);
 				if (itemPicker.superHighlightedSlots.contains(index) && scale == 1)
-					font.drawShadow(ms, Component.literal("^"), 11, 12, 0xFFFF55);
+					graphics.drawString(font, Component.literal("^"), 11, 12, 0xFFFF55);
 				if (itemPicker.highlightedSlots.contains(index) && scale == 1)
-					font.drawShadow(ms, Component.literal(".."), 11, 8, 0xbbbbbb);
+					graphics.drawString(font, Component.literal(".."), 11, 8, 0xbbbbbb);
 				ms.translate(0, 0, -200);
 
 				if (index == hoveredSlot) {
@@ -317,13 +326,13 @@ public class PaletteEditScreen extends SimpleScreen {
 				list.add(Lang.text("Covers all shapes")
 					.color(0xFFFF55)
 					.component());
-			renderComponentTooltip(ms, list, mouseX, mouseY);
+			graphics.renderComponentTooltip(font, list, mouseX, mouseY);
 		}
 	}
 
 	@Override
-	public void renderBackground(PoseStack pPoseStack) {
-		fillGradient(pPoseStack, 0, 0, width, height, BLACK_50.getRGB(), BLACK_150.getRGB());
+	public void renderBackground(GuiGraphics graphics) {
+		graphics.fillGradient(0, 0, width, height, BLACK_50.getRGB(), BLACK_150.getRGB());
 	}
 
 	@Override
@@ -354,8 +363,6 @@ public class PaletteEditScreen extends SimpleScreen {
 		addPaletteEntryButton(x + GRID * 16, line2, Palette.ROOF_FILL);
 		addPaletteEntryButton(x + GRID * 20, line1, Palette.ROOF_DECO);
 		addPaletteEntryButton(x + GRID * 20, line2, Palette.EXTERIOR_FLOOR);
-
-		minecraft.keyboardHandler.setSendRepeatsToGui(true);
 
 		searchBox = new EditBox(this.font, x, y - 130, 80, 9, Component.translatable("itemGroup.search"));
 		searchBox.setValue("");
@@ -408,7 +415,7 @@ public class PaletteEditScreen extends SimpleScreen {
 			if (selectedEntry == key) {
 				selectedEntry = null;
 				newMappings = null;
-				searchBox.changeFocus(false);
+				searchBox.setFocused(false);
 				searchBox.setVisible(false);
 				nameBox.setVisible(true);
 				return;
@@ -421,7 +428,7 @@ public class PaletteEditScreen extends SimpleScreen {
 			searchBox.setVisible(true);
 			nameBox.setVisible(false);
 			if (nameBox.isFocused())
-				nameBox.setFocus(false);
+				nameBox.setFocused(false);
 			focusBox = true;
 			refreshSearchResults();
 		});
@@ -435,8 +442,9 @@ public class PaletteEditScreen extends SimpleScreen {
 		itemScroll.startWithValue(0);
 
 		if (s.isEmpty()) {
-			for (Item item : ForgeRegistries.ITEMS)
-				item.fillItemCategory(CreativeModeTab.TAB_SEARCH, itemPicker);
+			Collection<ItemStack> items = CreativeModeTabs.searchTab()
+				.getDisplayItems();
+			itemPicker.addAll(items);
 			return;
 		}
 

@@ -6,6 +6,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.mightyarchitect.foundation.utility.Color;
 import com.simibubi.mightyarchitect.gui.NewSuperIconButton;
 
+import net.minecraft.client.gui.GuiGraphics;
+
 public class PaletteEntryButton extends NewSuperIconButton {
 
 	private Consumer<PoseStack> contentRenderer;
@@ -27,9 +29,10 @@ public class PaletteEntryButton extends NewSuperIconButton {
 	}
 
 	@Override
-	protected void drawContents(PoseStack ms, Color borderColour) {
+	protected void drawContents(GuiGraphics graphics, Color borderColour) {
+		PoseStack ms = graphics.pose();
 		ms.pushPose();
-		ms.translate(x, y, 100);
+		ms.translate(getX(), getY(), 100);
 		contentRenderer.accept(ms);
 		ms.popPose();
 	}

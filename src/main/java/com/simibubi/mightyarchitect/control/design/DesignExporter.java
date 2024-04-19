@@ -195,7 +195,7 @@ public class DesignExporter {
 		String filename = "";
 		String designPath = "";
 
-		BlockPos signPos = anchor.above();
+		BlockPos signPos = anchor.south();
 		if (worldIn.getBlockEntity(signPos) instanceof SignBlockEntity sign) {
 			filename = sign.getFrontText()
 				.getMessage(1, false)

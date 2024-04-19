@@ -31,8 +31,7 @@ public class FloatingBlockCleanup implements StepwiseWeathering {
 				BlockState realBlockStateBelow = realLevel.getBlockState(pos.below(i)
 					.offset(ArchitectManager.getModel()
 						.getAnchor()));
-				if (realBlockStateBelow.getMaterial()
-					.isReplaceable())
+				if (realBlockStateBelow.canBeReplaced())
 					continue;
 				iterator.remove();
 				frontier.add(pos);

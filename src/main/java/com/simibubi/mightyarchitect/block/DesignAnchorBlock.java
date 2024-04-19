@@ -10,7 +10,6 @@ import com.simibubi.mightyarchitect.foundation.utility.Lang;
 import com.simibubi.mightyarchitect.gui.DesignExporterScreen;
 import com.simibubi.mightyarchitect.gui.ScreenHelper;
 
-import net.minecraft.advancements.critereon.BlockPredicate.Builder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -20,7 +19,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.api.distmarker.Dist;
@@ -68,9 +69,10 @@ public class DesignAnchorBlock extends Block {
 			boolean resaving = false;
 			if (world.getBlockEntity(anchor.south()) instanceof SignBlockEntity sign) {
 				resaving = true;
-				DesignExporter.layer = DesignLayer.valueOf(sign.getMessage(2, false)
+				SignText text = sign.getFrontText();
+				DesignExporter.layer = DesignLayer.valueOf(text.getMessage(2, false)
 					.getString());
-				String[] split = sign.getMessage(3, false)
+				String[] split = text.getMessage(3, false)
 					.getString()
 					.split(", ");
 				DesignExporter.type = DesignType.valueOf(split[0]);

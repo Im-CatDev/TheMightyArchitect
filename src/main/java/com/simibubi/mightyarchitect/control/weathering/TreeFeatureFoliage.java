@@ -1,24 +1,17 @@
 package com.simibubi.mightyarchitect.control.weathering;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
 
 import com.mojang.serialization.Codec;
 import com.simibubi.mightyarchitect.control.TemplateBlockAccess;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.StructureManager;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -28,7 +21,6 @@ import net.minecraft.world.level.levelgen.Heightmap.Types;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.structure.StructureSet;
 
 public class TreeFeatureFoliage implements StepwiseWeathering {
 
@@ -44,7 +36,7 @@ public class TreeFeatureFoliage implements StepwiseWeathering {
 			int index = validFeatures.size() > 1 ? random().nextInt(validFeatures.size()) : 0;
 			if (!validFeatures.isEmpty())
 				validFeatures.get(index)
-					.place(level, new ChunkGeneratorExtension(null, java.util.Optional.empty(), null, null), random(),
+					.place(level, new ChunkGeneratorExtension(null), random(),
 						pos);
 
 		} catch (Exception e) {
@@ -60,10 +52,9 @@ public class TreeFeatureFoliage implements StepwiseWeathering {
 	}
 
 	private final class ChunkGeneratorExtension extends ChunkGenerator {
-		private ChunkGeneratorExtension(Registry<StructureSet> pStructureSets,
-			Optional<HolderSet<StructureSet>> pStructureOverrides, BiomeSource pBiomeSource,
-			Function<Holder<Biome>, BiomeGenerationSettings> pGenerationSettingsGetter) {
-			super(pStructureSets, pStructureOverrides, pBiomeSource, pGenerationSettingsGetter);
+
+		public ChunkGeneratorExtension(BiomeSource pBiomeSource) {
+			super(pBiomeSource);
 		}
 
 		@Override

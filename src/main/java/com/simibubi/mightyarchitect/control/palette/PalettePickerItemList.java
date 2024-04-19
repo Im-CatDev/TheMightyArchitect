@@ -91,11 +91,9 @@ public class PalettePickerItemList extends NonNullList<ItemStack> {
 		BlockState blockState = block.defaultBlockState();
 		if (blockState.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF))
 			return null;
-		if (blockState.isAir() || blockState.getMaterial()
-			.isReplaceable())
+		if (blockState.isAir() || blockState.canBeReplaced())
 			return null;
-		if (!blockState.getMaterial()
-			.blocksMotion())
+		if (!blockState.blocksMotion())
 			return null;
 
 		PaletteBlockShape shape = paletteEditScreen.getCurrentlyRequiredShape();

@@ -55,22 +55,21 @@ public class PlaceSignPacket {
 				entityWorld.setBlockAndUpdate(position, Blocks.DARK_OAK_WALL_SIGN.defaultBlockState()
 					.setValue(WallSignBlock.FACING, Direction.SOUTH));
 				SignBlockEntity sign = (SignBlockEntity) entityWorld.getBlockEntity(position);
-				SignText pText = new SignText();
-				pText.setColor(DyeColor.WHITE);
-				pText.setMessage(0, Lang.text(text1)
-					.color(0xD7C2D7)
-					.component());
-				pText.setMessage(1, Lang.text(text2)
-					.color(0xaaaaaa)
-					.component());
-				pText.setMessage(2, Lang.text(text3)
-					.color(0xdddddd)
-					.component());
-				pText.setMessage(3, Lang.text(text4)
-					.color(0xdddddd)
-					.component());
-				sign.setText(pText, true);
-				sign.setChanged();
+				sign.setText(new SignText().setColor(DyeColor.WHITE)
+					.setMessage(0, Lang.text(text1)
+						.color(0xD7C2D7)
+						.component())
+					.setMessage(1, Lang.text(text2)
+						.color(0xaaaaaa)
+						.component())
+					.setMessage(2, Lang.text(text3)
+						.color(0xdddddd)
+						.component())
+					.setMessage(3, Lang.text(text4)
+						.color(0xdddddd)
+						.component()),
+					true);
+//				sign.setChanged();
 				if (entityWorld instanceof ServerLevel sl)
 					sl.getChunkSource()
 						.blockChanged(position);

@@ -119,8 +119,7 @@ public interface StepwiseWeathering {
 				.offset(ArchitectManager.getModel()
 					.getAnchor()));
 			BlockState blockStateBelow = get(level, p.below());
-			return !blockStateBelow.isAir() || !realBlockStateBelow.getMaterial()
-				.isReplaceable();
+			return !blockStateBelow.isAir() || !realBlockStateBelow.canBeReplaced();
 		};
 
 		Drop: while (dropPos.getY() > level.getBounds().y - 20 && dropPos.getY() > realLevel.getMinBuildHeight()) {

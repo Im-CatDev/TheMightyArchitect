@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 import com.google.common.collect.Lists;
+import com.simibubi.mightyarchitect.foundation.utility.BlockHelper;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -30,7 +31,7 @@ public class SimplePaletteMapping implements PaletteMapping {
 		shapeProviderFallbacks = new ArrayList<>();
 		for (Tag tag : listTag)
 			if (tag instanceof CompoundTag cTag)
-				shapeProviderFallbacks.add(NbtUtils.readBlockState(cTag));
+				shapeProviderFallbacks.add(NbtUtils.readBlockState(BlockHelper.lookup(), cTag));
 	}
 
 	@Override

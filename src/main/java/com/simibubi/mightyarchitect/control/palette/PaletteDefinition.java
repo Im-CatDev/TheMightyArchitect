@@ -108,8 +108,9 @@ public class PaletteDefinition {
 	}
 
 	public BlockState get(PaletteBlockInfo paletteInfo) {
-		BlockState state = paletteInfo.applyOrientations(definition.get(paletteInfo.palette)
-			.provideWithContext(paletteInfo.blockShape, paletteInfo.pos, ArchitectManager.getModel().random));
+		PaletteMapping paletteMapping = definition.get(paletteInfo.palette);
+		BlockState state = paletteInfo.applyOrientations(paletteMapping.provideWithContext(paletteInfo.blockShape,
+			paletteInfo.pos, ArchitectManager.getModel().random));
 
 		Collection<Property<?>> properties = state.getProperties();
 
@@ -164,7 +165,7 @@ public class PaletteDefinition {
 		palette.name = paletteTag.getString("Name");
 		for (Palette key : Palette.values())
 			if (paletteTag.contains(key.name()))
-				palette.put(key, NbtUtils.readBlockState(BlockHelper.lookup(), paletteTag.getCompound(key.name())));
+				palette.put(key, PaletteMapping.fromNBT(paletteTag.getCompound(key.name())));
 
 		return palette;
 	}
