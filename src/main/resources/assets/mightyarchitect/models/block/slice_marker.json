@@ -1,8 +1,19 @@
 {
 	"textures": {
-		"side" : "#icon",
-		"end" : "mightyarchitect:block/slice_marker_top"
+		"south" : "#icon",
+		"north" : "mightyarchitect:block/slice_marker_side",
+		"west" : "mightyarchitect:block/slice_marker_side",
+		"east" : "mightyarchitect:block/slice_marker_side",
+		"down" : "block/jigsaw_bottom",
+		"up" : "block/jigsaw_bottom"
 	},
-	"parent": "block/cube_column",
+	"display": {
+        "gui": {
+            "rotation": [ 30, -45, 0 ],
+            "translation": [ 0, 0, 0],
+            "scale":[ 0.625, 0.625, 0.625 ]
+        }
+	},
+	"parent": "block/cube",
 	"uvlock": true
 }

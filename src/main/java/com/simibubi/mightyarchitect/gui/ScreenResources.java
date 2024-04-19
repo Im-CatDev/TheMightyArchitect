@@ -49,11 +49,15 @@ public enum ScreenResources {
 	ICON_TOWER_NO_ROOF("icons.png", 16, 32, 16, 16),
 	ICON_TOWER_ROOF("icons.png", 32, 32, 16, 16),
 	ICON_TOWER_FLAT_ROOF("icons.png", 48, 32, 16, 16),
+	ICON_WALL("icons.png", 64, 32, 16, 16),
+	ICON_FACADE("icons.png", 80, 32, 16, 16),
+	ICON_CORNER("icons.png", 96, 32, 16, 16),
 	
 	ICON_LAYER_REGULAR("icons.png", 0, 48, 16, 16),
 	ICON_LAYER_OPEN("icons.png", 16, 48, 16, 16),
 	ICON_LAYER_FOUNDATION("icons.png", 32, 48, 16, 16),
 	ICON_LAYER_SPECIAL("icons.png", 48, 48, 16, 16),
+	ICON_LAYER_ROOF("icons.png", 64, 48, 16, 16),
 	
 	ICON_TOOL_RESHAPE("icons.png", 0, 64, 16, 16),
 	ICON_TOOL_ROOM("icons.png", 16, 64, 16, 16),
@@ -66,7 +70,11 @@ public enum ScreenResources {
 	ICON_TOOL_PALETTE("icons.png", 48, 80, 16, 16),
 	
 	ICON_FOLDER("icons.png", 0, 96, 16, 16),
-	ICON_REFRESH("icons.png", 16, 96, 16, 16);
+	ICON_REFRESH("icons.png", 16, 96, 16, 16),
+	
+	I8_FLOPPY("icons.png", 0, 112, 8, 8),
+	I8_BIN("icons.png", 16, 112, 8, 8),
+	I8_EYE("icons.png", 32, 112, 8, 8);
 	
 	public static final int FONT_COLOR = 0x373F5A;
 	

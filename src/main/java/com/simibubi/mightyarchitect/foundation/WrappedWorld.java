@@ -51,10 +51,6 @@ public class WrappedWorld extends Level {
 		this.chunkSource = source;
 	}
 
-	public Level getLevel() {
-		return world;
-	}
-
 	@Override
 	public LevelLightEngine getLightEngine() {
 		return world.getLightEngine();

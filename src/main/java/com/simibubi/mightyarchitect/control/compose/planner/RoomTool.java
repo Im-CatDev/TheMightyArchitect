@@ -66,8 +66,8 @@ public class RoomTool extends GroundPlanningToolBase {
 		DesignTheme theme = groundPlan.theme;
 		ThemeStatistics stats = theme.getStatistics();
 		boolean hasFoundation = theme.getLayers()
-			.contains(DesignLayer.Foundation);
-		room.designLayer = hasFoundation ? DesignLayer.Foundation : DesignLayer.Regular;
+			.contains(DesignLayer.FOUNDATION);
+		room.designLayer = hasFoundation ? DesignLayer.FOUNDATION : DesignLayer.REGULAR;
 
 		int facadeWidth = Math.min(room.width, room.length);
 
@@ -87,7 +87,7 @@ public class RoomTool extends GroundPlanningToolBase {
 		if (facadeWidth > stats.MaxGableRoof || !stats.hasGables) {
 			room.roofType = stats.hasFlatRoof ? DesignType.FLAT_ROOF : DesignType.NONE;
 		} else {
-			room.roofType = stats.hasGables ? DesignType.ROOF : DesignType.NONE;
+			room.roofType = stats.hasGables ? DesignType.GABLE_ROOF : DesignType.NONE;
 		}
 
 		lastAddedStack = new Stack(room);

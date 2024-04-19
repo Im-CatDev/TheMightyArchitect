@@ -25,9 +25,9 @@ public class Stack {
 		theme = ArchitectManager.getModel()
 			.getGroundPlan().theme;
 
-		if (room.designLayer == DesignLayer.None) {
+		if (room.designLayer == DesignLayer.NONE) {
 			room.designLayer = theme.getLayers()
-				.contains(DesignLayer.Foundation) ? DesignLayer.Foundation : DesignLayer.Regular;
+				.contains(DesignLayer.FOUNDATION) ? DesignLayer.FOUNDATION : DesignLayer.REGULAR;
 		}
 
 		rooms.add(room);
@@ -58,8 +58,8 @@ public class Stack {
 
 		Room reference = rooms.get(Math.max(0, index - 1));
 		Room newRoom = reference.stack(exactCopy);
-		if (reference.designLayer == DesignLayer.Foundation)
-			newRoom.designLayer = DesignLayer.Regular;
+		if (reference.designLayer == DesignLayer.FOUNDATION)
+			newRoom.designLayer = DesignLayer.REGULAR;
 		if (!exactCopy) {
 			int defaultHeightForFloor = theme.getDefaultHeightForFloor(rooms.size());
 			newRoom.height = defaultHeightForFloor != -1 ? defaultHeightForFloor
@@ -133,13 +133,8 @@ public class Stack {
 
 	public AllSpecialTextures getTextureOf(Room room) {
 		switch (room.designLayer) {
-		case Foundation:
+		case FOUNDATION:
 			return AllSpecialTextures.FOUNDATION;
-		case None:
-		case Open:
-		case Regular:
-		case Roofing:
-		case Special:
 		default:
 			return AllSpecialTextures.NORMAL;
 		}

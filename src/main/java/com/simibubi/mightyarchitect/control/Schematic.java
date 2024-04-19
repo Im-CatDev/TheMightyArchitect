@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Vector;
 
 import com.simibubi.mightyarchitect.control.compose.Cuboid;
 import com.simibubi.mightyarchitect.control.compose.GroundPlan;
 import com.simibubi.mightyarchitect.control.compose.Room;
+import com.simibubi.mightyarchitect.control.design.AssembledSketch;
 import com.simibubi.mightyarchitect.control.design.DesignTheme;
 import com.simibubi.mightyarchitect.control.design.Sketch;
 import com.simibubi.mightyarchitect.control.palette.PaletteBlockInfo;
@@ -17,7 +17,9 @@ import com.simibubi.mightyarchitect.networking.InstantPrintPacket;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.PositionalRandomFactory;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class Schematic {
@@ -28,13 +30,15 @@ public class Schematic {
 	private PaletteDefinition secondaryPalette;
 
 	private Sketch sketch;
-	private Vector<Map<BlockPos, PaletteBlockInfo>> assembledSketch;
+	private AssembledSketch assembledSketch;
 	private TemplateBlockAccess materializedSketch;
 	private Cuboid bounds;
 
 	private PaletteDefinition editedPalette;
 	private boolean editingPrimary;
+
 	public int seed;
+	public PositionalRandomFactory random;
 
 	public Schematic() {
 		seed = new Random().nextInt(100000);
@@ -89,6 +93,8 @@ public class Schematic {
 	}
 
 	public void assembleSketch() {
+		random = RandomSource.create(seed)
+			.forkPositional();
 		assembledSketch = sketch.assemble();
 	}
 
@@ -146,23 +152,22 @@ public class Schematic {
 		bounds = null;
 
 		HashMap<BlockPos, BlockState> blockMap = new HashMap<>();
-		assembledSketch.get(0)
-			.forEach((pos, paletteInfo) -> {
-				BlockState state = primary.get(paletteInfo);
-				blockMap.put(pos, state);
-				checkBounds(pos);
-			});
-		assembledSketch.get(1)
-			.forEach((pos, paletteInfo) -> {
-				if (!assembledSketch.get(0)
-					.containsKey(pos)
-					|| !assembledSketch.get(0)
-						.get(pos).palette.isPrefferedOver(paletteInfo.palette)) {
-					BlockState state = secondary.get(paletteInfo);
-					blockMap.put(pos, state);
-					checkBounds(pos);
-				}
-			});
+		assembledSketch.primaryBlocks.forEach((pos, paletteInfo) -> {
+			BlockState state = primary.get(paletteInfo);
+			blockMap.put(pos, state);
+			checkBounds(pos);
+		});
+
+		assembledSketch.secondaryBlocks.forEach((pos, suppliedBlock) -> {
+			Map<BlockPos, PaletteBlockInfo> firstSketch = assembledSketch.primaryBlocks;
+			if (firstSketch.containsKey(pos) && firstSketch.get(pos)
+				.preferredOver(suppliedBlock))
+				return;
+
+			BlockState state = secondary.get(suppliedBlock);
+			blockMap.put(pos, state);
+			checkBounds(pos);
+		});
 
 		materializedSketch = new TemplateBlockAccess(blockMap, bounds, anchor);
 	}
@@ -170,32 +175,7 @@ public class Schematic {
 	private void checkBounds(BlockPos pos) {
 		if (bounds == null)
 			bounds = new Room(pos, BlockPos.ZERO);
-
-		int x = pos.getX();
-		int y = pos.getY();
-		int z = pos.getZ();
-
-		if (x < bounds.x) {
-			bounds.width += bounds.x - x;
-			bounds.x = x;
-		}
-		if (y < bounds.y) {
-			bounds.height += bounds.y - y;
-			bounds.y = y;
-		}
-		if (z < bounds.z) {
-			bounds.length += bounds.z - z;
-			bounds.z = z;
-		}
-
-		BlockPos maxPos = bounds.getOrigin()
-			.offset(bounds.getSize());
-		if (x >= maxPos.getX())
-			bounds.width = x - bounds.x + 1;
-		if (y >= maxPos.getY())
-			bounds.height = y - bounds.y + 1;
-		if (z >= maxPos.getZ())
-			bounds.length = z - bounds.z + 1;
+		bounds.include(pos);
 	}
 
 	public StructureTemplate writeToTemplate() {
@@ -228,6 +208,10 @@ public class Schematic {
 
 	public boolean isEmpty() {
 		return groundPlan == null;
+	}
+
+	public AssembledSketch getAssembledSketch() {
+		return assembledSketch;
 	}
 
 }

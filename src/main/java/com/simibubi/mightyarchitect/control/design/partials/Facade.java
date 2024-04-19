@@ -7,7 +7,7 @@ public class Facade extends Wall {
 	@Override
 	public Design fromNBT(CompoundTag compound) {
 		Facade facade = new Facade();
-		facade.expandBehaviour = ExpandBehaviour.None;
+		facade.expandBehaviour = ExpandBehaviour.NONE;
 		facade.applyNBT(compound);
 		return facade;
 	}

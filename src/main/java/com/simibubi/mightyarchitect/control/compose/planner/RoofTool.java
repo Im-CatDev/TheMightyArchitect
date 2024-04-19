@@ -21,7 +21,7 @@ public class RoofTool extends AbstractRoomFaceSelectionTool {
 
 		Room room = selectedStack.highest();
 
-		if (room.roofType == DesignType.ROOF) {
+		if (room.roofType == DesignType.GABLE_ROOF) {
 			if (!(selectedStack instanceof CylinderStack) && !room.quadFacadeRoof && room.width == room.length) {
 				room.quadFacadeRoof = true;
 			} else {
@@ -33,7 +33,7 @@ public class RoofTool extends AbstractRoomFaceSelectionTool {
 			room.roofType = DesignType.NONE;
 
 		} else if (room.roofType == DesignType.NONE) {
-			room.roofType = DesignType.ROOF;
+			room.roofType = DesignType.GABLE_ROOF;
 
 		}
 

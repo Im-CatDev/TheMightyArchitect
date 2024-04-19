@@ -58,7 +58,7 @@ public class DesignTheme {
 	protected void updateRoomLayers() {
 		roomLayers = new ArrayList<>();
 		roomLayers.addAll(layers);
-		roomLayers.remove(DesignLayer.Roofing);
+		roomLayers.remove(DesignLayer.ROOFING);
 	}
 
 	public DesignTheme withTypes(DesignType... designtypes) {

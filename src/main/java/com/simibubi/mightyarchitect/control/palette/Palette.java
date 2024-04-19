@@ -1,49 +1,61 @@
 package com.simibubi.mightyarchitect.control.palette;
 
-public enum Palette {
+import static com.simibubi.mightyarchitect.control.palette.PaletteBlockShape.SINGLE;
+import static com.simibubi.mightyarchitect.control.palette.PaletteBlockShape.SLAB_STAIR;
+import static com.simibubi.mightyarchitect.control.palette.PaletteBlockShape.SLAB_STAIR_WALL;
 
-	// modifiable
-	HEAVY_PRIMARY("Main Foundation Walls", 8),
-	HEAVY_SECONDARY("Alt. Foundation Walls", 8),
-	HEAVY_WINDOW("Foundation Windows", 3),
-	HEAVY_POST("Foundation Detailing", 2),
+import java.util.EnumSet;
+
+public enum Palette {
 	
-	INNER_PRIMARY("Main Walls", 7),
-	INNER_SECONDARY("Alt. Walls", 7),
-	INNER_DETAIL("Detailed Wall Edges", 9),
-	WINDOW("Windows", 6),
+	FOUNDATION_FILL("Foundation Walls", 8, SLAB_STAIR_WALL),
+	FOUNDATION_EDGE("Foundation Wall Edges", 10, SLAB_STAIR_WALL),
+	FOUNDATION_DECO("Foundation Details", 8, SINGLE),
+	FOUNDATION_WINDOW("Foundation Windows", 3, SINGLE),
 	
-	OUTER_THICK("Heavy Posts", 2),
-	OUTER_THIN("Light Posts / Fences", 1),
-	OUTER_SLAB("Detailing Slabs", 3),
-	OUTER_FLAT("Detailing Panels", 2),
+	STANDARD_FILL("Standard Walls", 7, SLAB_STAIR),
+	STANDARD_EDGE("Standard Wall Edges", 9, SLAB_STAIR),
+	STANDARD_DECO("Standard Wall Details", 7, SINGLE),
+	STANDARD_WINDOW("Standard Windows", 6, SINGLE),
 	
-	ROOF_PRIMARY("Main Roofing", 4),
-	FLOOR("Flooring Material", 9),
-	ROOF_DETAIL("Detailed Roof Edges", 5),
-	ROOF_SLAB("Main Roofing Slabs", 3),
+	ROOF_FILL("Roof Material", 4, SLAB_STAIR_WALL),
+	ROOF_EDGE("Roof Edges", 5, SLAB_STAIR_WALL),
+	ROOF_DECO("Roof Details", 4, SINGLE),
 	
-	// dynamic
-	CLEAR("Clearing Material", 10);
+	HEAVY_POST("Heavy Posts", 2, SINGLE),
+	LIGHT_POST("Light Posts / Fences", 1, SINGLE),
+	PANEL("Detailing Panels", 2, SINGLE),
+	INTERIOR_FLOOR("Interior Flooring", 9, SINGLE),
+	EXTERIOR_FLOOR("Exterior Flooring", 9, SINGLE),
 	
+	CLEAR("Clearing Material", 100, SINGLE);
+
 	private int priority;
 	private String displayName;
+	private EnumSet<PaletteBlockShape> shapes;
 	
-	private Palette(String displayName, int priority) {
+	private Palette(String displayName, int priority, EnumSet<PaletteBlockShape> shapes) {
 		this.displayName = displayName;
 		this.priority = priority;
+		this.shapes = shapes;
 	}
 	
-	public boolean isPrefferedOver(Palette other) {
-		return this.priority >= other.priority;
+	public int comparePriority(Palette other) {
+		return priority - other.priority;
 	}
 	
 	public String getDisplayName() {
 		return displayName;
 	}
 	
-	public static Palette getByChar(char letter) {
-		return (values()[letter - 'A']);
+	public EnumSet<PaletteBlockShape> getShapes() {
+		return shapes;
+	}
+	
+	public static Palette getByChar(char character) {
+		if (character == ' ')
+			return null;
+		return (values()[character - 'A']);
 	}
 	
 	public char asChar() {

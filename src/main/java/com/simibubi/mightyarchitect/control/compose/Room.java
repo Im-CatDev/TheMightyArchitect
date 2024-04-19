@@ -22,8 +22,8 @@ public class Room extends Cuboid {
 	public Room(BlockPos origin, int width, int height, int length) {
 		super(origin, width, height, length);
 		styleGroup = 'A';
-		designLayer = DesignLayer.Regular;
-		roofType = DesignType.ROOF;
+		designLayer = DesignLayer.REGULAR;
+		roofType = DesignType.GABLE_ROOF;
 		quadFacadeRoof = Math.abs(width) == Math.abs(length);
 		secondaryPalette = false;
 	}

@@ -11,9 +11,9 @@ import net.minecraft.client.Minecraft;
 public class ThemeStatistics {
 
 	// Limits for the design Exporter
-	public static final int MIN_TOWER_RADIUS = 1, MAX_TOWER_RADIUS = 15;
-	public static final int MIN_ROOF_SPAN = 3, MAX_ROOF_SPAN = 35;
-	public static final int MIN_MARGIN = 0, MAX_MARGIN = 15;
+	public static final int MIN_TOWER_RADIUS = 1, MAX_TOWER_RADIUS = 14;
+	public static final int MIN_ROOF_SPAN = 3, MAX_ROOF_SPAN = 33;
+	public static final int MIN_MARGIN = 0, MAX_MARGIN = 11;
 
 	// Limits for the composer
 	public static final int MAX_FLOORS = 25;
@@ -40,10 +40,10 @@ public class ThemeStatistics {
 		ThemeStatistics stats = new ThemeStatistics();
 
 		if (!theme.getTypes()
-			.contains(DesignType.TOWER_FLAT_ROOF))
+			.contains(DesignType.TOWER_CAP))
 			stats.hasFlatTowerRoof = false;
 		if (!theme.getTypes()
-			.contains(DesignType.TOWER_ROOF))
+			.contains(DesignType.TOWER_CONE))
 			stats.hasConicalRoof = false;
 
 		if (theme.getTypes()
@@ -56,7 +56,7 @@ public class ThemeStatistics {
 
 			for (DesignLayer layer : theme.getRoomLayers()) {
 				DesignQuery towerQuery = new DesignQuery(theme, layer, DesignType.TOWER);
-				DesignQuery conicalRoofQuery = new DesignQuery(theme, DesignLayer.Roofing, DesignType.TOWER_ROOF);
+				DesignQuery conicalRoofQuery = new DesignQuery(theme, DesignLayer.ROOFING, DesignType.TOWER_CONE);
 
 				if (!designExists(towerQuery)) {
 					break;
@@ -90,10 +90,10 @@ public class ThemeStatistics {
 		}
 
 		if (theme.getTypes()
-			.contains(DesignType.ROOF)) {
+			.contains(DesignType.GABLE_ROOF)) {
 
 			// Determine min and max gable span
-			DesignQuery roofQuery = new DesignQuery(theme, DesignLayer.Roofing, DesignType.ROOF);
+			DesignQuery roofQuery = new DesignQuery(theme, DesignLayer.ROOFING, DesignType.GABLE_ROOF);
 
 			if (!designExists(roofQuery)) {
 				stats.hasGables = false;
@@ -119,7 +119,7 @@ public class ThemeStatistics {
 
 		if (theme.getTypes()
 			.contains(DesignType.FLAT_ROOF)) {
-			DesignQuery roofQuery = new DesignQuery(theme, DesignLayer.Roofing, DesignType.FLAT_ROOF);
+			DesignQuery roofQuery = new DesignQuery(theme, DesignLayer.ROOFING, DesignType.FLAT_ROOF);
 
 			if (!designExists(roofQuery)) {
 				stats.hasFlatRoof = false;
@@ -188,7 +188,7 @@ public class ThemeStatistics {
 		if (!tower && room.quadFacadeRoof && room.width != room.length)
 			room.quadFacadeRoof = false;
 
-		if (!tower && desired == DesignType.ROOF) {
+		if (!tower && desired == DesignType.GABLE_ROOF) {
 			if (hasGables && Math.min(room.width, room.length) <= MaxGableRoof
 				&& Math.min(room.width, room.length) >= MinGableRoof)
 				return desired;
@@ -203,7 +203,7 @@ public class ThemeStatistics {
 			return DesignType.NONE;
 		}
 
-		if (tower && desired == DesignType.ROOF) {
+		if (tower && desired == DesignType.GABLE_ROOF) {
 			if (hasConicalRoof && room.width <= MaxConicalRoofRadius * 2 + 1)
 				return desired;
 			if (hasFlatTowerRoof)

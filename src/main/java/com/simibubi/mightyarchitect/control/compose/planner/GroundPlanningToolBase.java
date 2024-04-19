@@ -152,15 +152,15 @@ public abstract class GroundPlanningToolBase extends ComposerToolBase {
 			float w = room.width;
 
 			DesignType roofType = room.roofType;
-			if (stack instanceof CylinderStack && roofType == DesignType.ROOF)
-				roofType = DesignType.TOWER_ROOF;
+			if (stack instanceof CylinderStack && roofType == DesignType.GABLE_ROOF)
+				roofType = DesignType.TOWER_CONE;
 
 			List<OutlineParams> lines = new ArrayList<>();
 			String string = stack.toString();
 
 			boolean alongZ = w >= l;
 			switch (roofType) {
-			case TOWER_ROOF:
+			case TOWER_CONE:
 				y += .25;
 				key(string + "TA").vertex(x, y + h, z, lines)
 					.vertex(x + w / 2, y + h + w, z + l / 2, lines)
@@ -179,7 +179,7 @@ public abstract class GroundPlanningToolBase extends ComposerToolBase {
 				break;
 
 			case FLAT_ROOF:
-			case TOWER_FLAT_ROOF:
+			case TOWER_CAP:
 				y += .25;
 				key(string + "F").vertex(x, y + h, z, lines)
 					.vertex(x, y + h, z + l, lines)
@@ -196,7 +196,7 @@ public abstract class GroundPlanningToolBase extends ComposerToolBase {
 					.end();
 
 				break;
-			case ROOF:
+			case GABLE_ROOF:
 				y += .25;
 				boolean q = room.quadFacadeRoof;
 				if (q)

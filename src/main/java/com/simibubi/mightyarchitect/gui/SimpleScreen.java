@@ -4,20 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.simibubi.mightyarchitect.foundation.utility.Lang;
-import com.simibubi.mightyarchitect.gui.widgets.AbstractSimiWidget;
+import com.simibubi.mightyarchitect.gui.widgets.SimpleWidget;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-public abstract class AbstractSimiScreen extends Screen {
+public abstract class SimpleScreen extends Screen {
 
 	protected int sWidth, sHeight;
 	protected int topLeftX, topLeftY;
 	protected List<AbstractWidget> widgets;
 
-	protected AbstractSimiScreen() {
+	protected SimpleScreen() {
 		super(Lang.empty());
 		widgets = new ArrayList<>();
 	}
@@ -37,7 +38,7 @@ public abstract class AbstractSimiScreen extends Screen {
 			widget.render(pGuiGraphics, mouseX, mouseY, partialTicks);
 		renderWindowForeground(pGuiGraphics, mouseX, mouseY, partialTicks);
 		for (AbstractWidget widget : widgets)
-			if (widget instanceof AbstractSimiWidget asw && asw.isMouseOver(mouseX, mouseY)) {
+			if (widget instanceof SimpleWidget asw && asw.isMouseOver(mouseX, mouseY)) {
 				List<Component> toolTip = asw.getToolTip();
 				if (toolTip.isEmpty())
 					continue;
@@ -54,6 +55,7 @@ public abstract class AbstractSimiScreen extends Screen {
 			if (widget.isMouseOver(x, y) && widget.mouseClicked(x, y, button)) {
 				setFocused(widget);
 				result = true;
+				break;
 			}
 		}
 		return result;
@@ -74,8 +76,9 @@ public abstract class AbstractSimiScreen extends Screen {
 			if (widget.charTyped(character, code))
 				return true;
 		}
-		if (character == 'e')
-			onClose();
+		if (!(getFocused() instanceof EditBox))
+			if (character == 'e')
+				onClose();
 		return super.charTyped(character, code);
 	}
 
@@ -104,9 +107,9 @@ public abstract class AbstractSimiScreen extends Screen {
 		for (AbstractWidget widget : widgets) {
 			if (!widget.isHoveredOrFocused())
 				continue;
-			if (widget instanceof AbstractSimiWidget && !((AbstractSimiWidget) widget).getToolTip()
+			if (widget instanceof SimpleWidget && !((SimpleWidget) widget).getToolTip()
 				.isEmpty())
-				pGuiGraphics.renderComponentTooltip(font, ((AbstractSimiWidget) widget).getToolTip(), mouseX, mouseY);
+				pGuiGraphics.renderComponentTooltip(font, ((SimpleWidget) widget).getToolTip(), mouseX, mouseY);
 		}
 	}
 

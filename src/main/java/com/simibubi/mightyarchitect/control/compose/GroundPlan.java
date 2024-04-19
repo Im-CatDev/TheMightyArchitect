@@ -14,8 +14,8 @@ public class GroundPlan {
 	public static final int MAX_LAYERS = 5;
 
 	public DesignTheme theme;
-	private List<Stack> stacks;
-	private List<Room> interior;
+	public List<Stack> stacks;
+	public List<Room> interior;
 	
 	public GroundPlan(DesignTheme theme) {
 		this.theme = theme;

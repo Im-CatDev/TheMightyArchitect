@@ -1,14 +1,9 @@
 package com.simibubi.mightyarchitect.control.design;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
 
-import com.google.common.collect.ImmutableList;
 import com.simibubi.mightyarchitect.control.compose.Room;
 import com.simibubi.mightyarchitect.control.design.partials.Design.DesignInstance;
 import com.simibubi.mightyarchitect.control.palette.BlockOrientation;
@@ -29,52 +24,22 @@ public class Sketch {
 		interior = new LinkedList<>();
 	}
 
-	public Vector<Map<BlockPos, PaletteBlockInfo>> assemble() {
-		Vector<Map<BlockPos, PaletteBlockInfo>> assembled = new Vector<>(2);
-		Map<BlockPos, PaletteBlockInfo> blocksPrimary = new HashMap<>();
-		Map<BlockPos, PaletteBlockInfo> blocksSecondary = new HashMap<>();
+	public AssembledSketch assemble() {
+		AssembledSketch assembled = new AssembledSketch(interior);
 
 		for (DesignInstance design : secondary)
-			design.getBlocks(blocksSecondary);
+			design.getBlocks(assembled.secondaryBlocks);
 		for (DesignInstance design : primary)
-			design.getBlocks(blocksPrimary);
+			design.getBlocks(assembled.primaryBlocks);
 
-		clean(blocksPrimary, blocksSecondary);
-		addFloors(blocksPrimary, blocksSecondary);
-
-		assembled.addElement(blocksPrimary);
-		assembled.addElement(blocksSecondary);
+		assembled.clean();
+		addFloors(assembled);
 		return assembled;
 	}
 
-	private void clean(Map<BlockPos, PaletteBlockInfo> blocks, Map<BlockPos, PaletteBlockInfo> blocks2) {
-		Set<BlockPos> toRemove = new HashSet<>();
-
-		for (Map<BlockPos, PaletteBlockInfo> paletteLayer : ImmutableList.of(blocks, blocks2)) {
-			for (BlockPos pos : paletteLayer.keySet()) {
-				
-				if (paletteLayer.get(pos).palette == Palette.CLEAR) {
-					toRemove.add(pos);
-				} else {
-					for (Room room : interior) {
-						if (room.designLayer.isExterior())
-							continue;
-						if (room.contains(pos))
-							toRemove.add(pos);
-					}
-				}
-			}
-		}
-		
-		toRemove.forEach(e -> {
-			blocks.remove(e);
-			blocks2.remove(e);
-		});
-	}
-
-	private void addFloors(Map<BlockPos, PaletteBlockInfo> primary, Map<BlockPos, PaletteBlockInfo> secondary) {
+	private void addFloors(AssembledSketch assembled) {
 		for (Room cuboid : interior) {
-			
+
 			boolean trimAbove = false;
 			for (Room trim : interior) {
 				if (trimAbove)
@@ -83,14 +48,15 @@ public class Sketch {
 					continue;
 				if (trim.y != cuboid.y + cuboid.height)
 					continue;
-				if (trim.x <= cuboid.x && trim.z <= cuboid.z && trim.x + trim.width >= cuboid.x + cuboid.width && trim.z + trim.length >= cuboid.z + cuboid.length)
-					trimAbove = true;				
+				if (trim.x <= cuboid.x && trim.z <= cuboid.z && trim.x + trim.width >= cuboid.x + cuboid.width
+					&& trim.z + trim.length >= cuboid.z + cuboid.length)
+					trimAbove = true;
 			}
 			if (trimAbove)
 				continue;
-			
+
 			List<Room> checked = new LinkedList<>();
-			
+
 			interior.forEach(other -> {
 				if (other == cuboid)
 					return;
@@ -102,26 +68,29 @@ public class Sketch {
 			});
 
 			int y = cuboid.height - 1;
-			PaletteBlockInfo paletteBlockInfo = new PaletteBlockInfo(Palette.FLOOR, BlockOrientation.NONE);
-			paletteBlockInfo.afterPosition = BlockOrientation.TOP_UP;
-			Map<BlockPos, PaletteBlockInfo> blocks = cuboid.secondaryPalette ? secondary : primary;
-			
+			PaletteBlockInfo paletteBlockInfo = new PaletteBlockInfo(Palette.INTERIOR_FLOOR);
+			paletteBlockInfo.placedOrientation = BlockOrientation.TOP_UP;
+			Map<BlockPos, PaletteBlockInfo> blocks =
+				cuboid.secondaryPalette ? assembled.secondaryBlocks : assembled.primaryBlocks;
+
 			for (int x = 0; x < cuboid.width; x++) {
 				for (int z = 0; z < cuboid.length; z++) {
 					boolean contained = false;
-					BlockPos pos = cuboid.getOrigin().offset(x, y, z);
-					
+					BlockPos pos = cuboid.getOrigin()
+						.offset(x, y, z);
+
 					for (Room other : checked) {
 						if (other.contains(pos)) {
 							contained = true;
 							break;
 						}
 					}
-					
+
 					if (contained) {
 						continue;
 					}
-					
+
+					paletteBlockInfo.pos = pos;
 					blocks.put(pos, paletteBlockInfo);
 				}
 			}
