@@ -26,11 +26,11 @@ public class ThemeStorage {
 
 	public enum IncludedThemes {
 
-		Medieval("medieval", 3, 5),
-		Fallback("fallback_theme", 3, 4),
-		Modern("modern", 2, 4),
-		TownHouse("town_house", 4, 5),
-		Cattingham("cattingham_palace", 7, 2, 6);
+		FALLBACK("fallback_theme", 3, 4);
+//		Medieval("medieval", 3, 5),
+//		Modern("modern", 2, 4),
+//		TownHouse("town_house", 4, 5),
+//		Cattingham("cattingham_palace", 7, 2, 6);
 
 		public DesignTheme theme;
 		public String themeFolder;
@@ -53,16 +53,16 @@ public class ThemeStorage {
 
 	public static List<DesignTheme> getIncluded() {
 		List<DesignTheme> included = new ArrayList<>();
-		for (IncludedThemes theme : IncludedThemes.values()) {
-
-			if (theme.theme == null)
-				theme.theme = loadInternalTheme(theme.themeFolder).withHeightSequence(theme.heights);
-
-			if (theme == IncludedThemes.Fallback)
-				continue;
-
-			included.add(theme.theme);
-		}
+//		for (IncludedThemes theme : IncludedThemes.values()) {
+//
+//			if (theme.theme == null)
+//				theme.theme = loadInternalTheme(theme.themeFolder).withHeightSequence(theme.heights);
+//
+//			if (theme == IncludedThemes.Fallback)
+//				continue;
+//
+//			included.add(theme.theme);
+//		}
 		return included;
 	}
 
@@ -94,8 +94,8 @@ public class ThemeStorage {
 		theme.setImported(true);
 		theme.setDefaultPalette(PaletteDefinition.defaultPalette());
 		theme.setDefaultSecondaryPalette(PaletteDefinition.defaultPalette());
-		return theme.withLayers(DesignLayer.Regular, DesignLayer.Roofing, DesignLayer.Foundation)
-			.withTypes(DesignType.WALL, DesignType.CORNER, DesignType.ROOF, DesignType.FACADE, DesignType.FLAT_ROOF);
+		return theme.withLayers(DesignLayer.REGULAR, DesignLayer.ROOFING, DesignLayer.FOUNDATION)
+			.withTypes(DesignType.WALL, DesignType.CORNER, DesignType.GABLE_ROOF, DesignType.FACADE, DesignType.FLAT_ROOF);
 	}
 
 	public static void exportTheme(DesignTheme theme) {

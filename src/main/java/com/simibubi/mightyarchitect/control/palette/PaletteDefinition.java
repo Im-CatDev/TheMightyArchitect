@@ -2,8 +2,13 @@ package com.simibubi.mightyarchitect.control.palette;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.simibubi.mightyarchitect.control.ArchitectManager;
 import com.simibubi.mightyarchitect.foundation.utility.BlockHelper;
 
 import net.minecraft.core.Direction;
@@ -12,16 +17,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 
 public class PaletteDefinition {
 
-	private Map<Palette, BlockState> definition;
+	private Map<Palette, PaletteMapping> definition;
+
 	private String name;
 	private BlockState clear;
 	private static PaletteDefinition defaultPalette;
@@ -29,21 +33,36 @@ public class PaletteDefinition {
 	public static PaletteDefinition defaultPalette() {
 		if (defaultPalette == null) {
 			defaultPalette = new PaletteDefinition("Standard Palette");
-			defaultPalette.put(Palette.HEAVY_PRIMARY, Blocks.POLISHED_ANDESITE)
-					.put(Palette.HEAVY_SECONDARY, Blocks.COBBLESTONE)
-					.put(Palette.HEAVY_WINDOW, Blocks.BLACK_STAINED_GLASS_PANE)
-					.put(Palette.HEAVY_POST, Blocks.MOSSY_COBBLESTONE_WALL)
-					.put(Palette.INNER_DETAIL, Blocks.SPRUCE_WOOD).put(Palette.INNER_PRIMARY, Blocks.SPRUCE_PLANKS)
-					.put(Palette.INNER_SECONDARY, Blocks.DARK_OAK_PLANKS)
-					.put(Palette.OUTER_FLAT,
-							Blocks.OAK_TRAPDOOR.defaultBlockState()
-									.setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH)
-									.setValue(BlockStateProperties.OPEN, true))
-					.put(Palette.OUTER_SLAB, Blocks.COBBLESTONE_SLAB).put(Palette.OUTER_THICK, Blocks.COBBLESTONE_WALL)
-					.put(Palette.OUTER_THIN, Blocks.SPRUCE_FENCE).put(Palette.ROOF_PRIMARY, Blocks.GRANITE)
-					.put(Palette.FLOOR, Blocks.OAK_PLANKS).put(Palette.ROOF_DETAIL, Blocks.BRICKS)
-					.put(Palette.CLEAR, Blocks.BARRIER).put(Palette.ROOF_SLAB, Blocks.BRICK_SLAB)
-					.put(Palette.WINDOW, Blocks.GLASS_PANE);
+			defaultPalette
+
+				.put(Palette.FOUNDATION_EDGE, Blocks.STONE_BRICKS)
+				.put(Palette.FOUNDATION_FILL, Blocks.COBBLESTONE)
+				.put(Palette.FOUNDATION_DECO, Blocks.BASALT)
+				.put(Palette.FOUNDATION_WINDOW, Blocks.IRON_BARS)
+
+				.put(Palette.STANDARD_EDGE,
+					new SimplePaletteMapping(Blocks.SPRUCE_WOOD.defaultBlockState(),
+						Blocks.DARK_OAK_PLANKS.defaultBlockState()))
+
+				.put(Palette.STANDARD_FILL,
+					new GradientPaletteMapping(List.of(new SimplePaletteMapping(Blocks.DARK_OAK_PLANKS.defaultBlockState()),
+						new SimplePaletteMapping(Blocks.SPRUCE_PLANKS.defaultBlockState()),
+						new SimplePaletteMapping(Blocks.OAK_PLANKS.defaultBlockState())), List.of(10, 5, 3)))
+
+				.put(Palette.STANDARD_DECO, Blocks.STRIPPED_SPRUCE_LOG)
+				.put(Palette.STANDARD_WINDOW, Blocks.GLASS_PANE)
+
+				.put(Palette.ROOF_EDGE, Blocks.BRICKS)
+				.put(Palette.ROOF_FILL, Blocks.GRANITE)
+				.put(Palette.ROOF_DECO, Blocks.OAK_LOG)
+
+				.put(Palette.HEAVY_POST, Blocks.MUD_BRICK_WALL)
+				.put(Palette.LIGHT_POST, Blocks.SPRUCE_FENCE)
+				.put(Palette.PANEL, Blocks.SPRUCE_TRAPDOOR)
+				.put(Palette.INTERIOR_FLOOR, Blocks.OAK_PLANKS)
+				.put(Palette.EXTERIOR_FLOOR, Blocks.TUFF)
+				.put(Palette.CLEAR, Blocks.BARRIER);
+
 		}
 		return defaultPalette;
 	}
@@ -53,13 +72,12 @@ public class PaletteDefinition {
 		clone.clear = defaultPalette().clear();
 		clone.definition = new HashMap<>(defaultPalette().getDefinition());
 		definition.forEach((key, value) -> clone.definition.put(key, value));
-		clone.definition.put(Palette.CLEAR, Blocks.BARRIER.defaultBlockState());
 		return clone;
 	}
 
 	public PaletteDefinition(String name) {
 		definition = new HashMap<>();
-		definition.put(Palette.CLEAR, Blocks.BARRIER.defaultBlockState());
+		put(Palette.CLEAR, Blocks.BARRIER.defaultBlockState());
 		this.name = name;
 	}
 
@@ -69,32 +87,51 @@ public class PaletteDefinition {
 
 	public PaletteDefinition put(Palette key, BlockState block) {
 		if (block.getBlock() instanceof TrapDoorBlock)
-			block = block.setValue(TrapDoorBlock.OPEN, true);
-		definition.put(key, block);
+			block = block.setValue(TrapDoorBlock.FACING, Direction.SOUTH)
+				.setValue(TrapDoorBlock.OPEN, true);
+		return put(key, new SimplePaletteMapping(block));
+	}
+
+	public PaletteDefinition put(Palette key, PaletteMapping mapping) {
+		definition.put(key, mapping);
 		return this;
 	}
 
-	public Map<Palette, BlockState> getDefinition() {
+	public Map<Palette, PaletteMapping> getDefinition() {
 		return definition;
 	}
 
 	public BlockState clear() {
 		if (clear == null)
-			clear = get(Palette.CLEAR);
+			clear = get(Palette.CLEAR, PaletteBlockShape.REGULAR);
 		return clear;
 	}
 
-	public BlockState get(Palette key) {
-		BlockState iBlockState = get(key, BlockOrientation.NONE);
-		if (iBlockState.getBlock() instanceof LeavesBlock) {
-			iBlockState = iBlockState.setValue(LeavesBlock.PERSISTENT, true);
+	public BlockState get(PaletteBlockInfo paletteInfo) {
+		PaletteMapping paletteMapping = definition.get(paletteInfo.palette);
+		BlockState state = paletteInfo.applyOrientations(paletteMapping.provideWithContext(paletteInfo.blockShape,
+			paletteInfo.pos, ArchitectManager.getModel().random));
+
+		Collection<Property<?>> properties = state.getProperties();
+
+		for (Property<?> property : properties) {
+			if (property instanceof DirectionProperty) {
+				Direction facing = (Direction) state.getValue(property);
+				if (facing.getAxis() == Axis.Y)
+					continue;
+
+				if ((paletteInfo.mirrorZ && facing.getAxis() != Axis.Z)
+					|| (paletteInfo.mirrorX && facing.getAxis() != Axis.X))
+					state = state.setValue((DirectionProperty) property, facing.getOpposite());
+			}
 		}
-		return iBlockState;
+
+		return state;
 	}
 
-	private BlockState get(Palette key, BlockOrientation orientation) {
-		BlockState iBlockState = definition.get(key);
-		return iBlockState == null ? Blocks.AIR.defaultBlockState() : orientation.apply(iBlockState);
+	public BlockState get(Palette key, PaletteBlockShape shape) {
+		return definition.get(key)
+			.provide(shape);
 	}
 
 	public void setName(String name) {
@@ -109,13 +146,9 @@ public class PaletteDefinition {
 		compound = (compound == null) ? new CompoundTag() : compound;
 		CompoundTag palette = new CompoundTag();
 		palette.putString("Name", getName());
-		Palette[] values = Palette.values();
-
-		for (int i = 0; i < values.length; i++) {
-			CompoundTag state = NbtUtils.writeBlockState(get(values[i]));
-			palette.put(values[i].name(), state);
-		}
-
+		for (Palette key : Palette.values())
+			palette.put(key.name(), definition.get(key)
+				.toNBT());
 		compound.put("Palette", palette);
 		return compound;
 	}
@@ -123,87 +156,48 @@ public class PaletteDefinition {
 	public static PaletteDefinition fromNBT(CompoundTag compound) {
 		PaletteDefinition palette = defaultPalette().clone();
 
-		if (compound != null) {
-			if (compound.contains("Palette")) {
-				CompoundTag paletteTag = compound.getCompound("Palette");
-				palette.name = paletteTag.getString("Name");
-				for (Palette key : Palette.values()) {
-					if (paletteTag.contains(key.name())) {
-						palette.put(key,
-							NbtUtils.readBlockState(BlockHelper.lookup(), paletteTag.getCompound(key.name())));
-					}
-				}
-			}
-		}
-		
-		palette.put(Palette.CLEAR, Blocks.BARRIER.defaultBlockState());
+		if (compound == null)
+			return palette;
+		if (!compound.contains("Palette"))
+			return palette;
+
+		CompoundTag paletteTag = compound.getCompound("Palette");
+		palette.name = paletteTag.getString("Name");
+		for (Palette key : Palette.values())
+			if (paletteTag.contains(key.name()))
+				palette.put(key, PaletteMapping.fromNBT(paletteTag.getCompound(key.name())));
+
 		return palette;
-	}
-
-	public BlockState get(PaletteBlockInfo paletteInfo) {
-		BlockState state = definition.get(paletteInfo.palette);
-		state = state == null ? Blocks.AIR.defaultBlockState() : paletteInfo.apply(state);
-
-		Collection<Property<?>> properties = state.getProperties();
-
-		for (Property<?> property : properties) {
-			if (property instanceof DirectionProperty) {
-				Direction facing = (Direction) state.getValue(property);
-				if (facing.getAxis() == Axis.Y)
-					continue;
-
-				if ((paletteInfo.mirrorZ && facing.getAxis() != Axis.Z)
-						|| (paletteInfo.mirrorX && facing.getAxis() != Axis.X))
-					state = state.setValue((DirectionProperty) property, facing.getOpposite());
-			}
-		}
-
-		return state;
 	}
 
 	public String getDuplicates() {
 		for (Palette key : definition.keySet()) {
-			Palette keyIgnoreRotation = getKeyIgnoreRotation(definition.get(key));
-			if (key != keyIgnoreRotation) {
-				return key.getDisplayName() + " = " + keyIgnoreRotation.getDisplayName();
-			}
+			Pair<Palette, PaletteBlockShape> other = scan(definition.get(key)
+				.provide(PaletteBlockShape.REGULAR));
+			if (other == null)
+				continue;
+			if (key != other.getKey())
+				return key.getDisplayName() + " = " + other.getKey()
+					.getDisplayName();
 		}
 		return "";
 	}
 
 	public boolean hasDuplicates() {
-		for (Palette key : definition.keySet()) {
-			if (key != getKeyIgnoreRotation(definition.get(key))) {
-				return true;
-			}
-		}
-		return false;
+		return !getDuplicates().isEmpty();
 	}
 
-	public Palette scan(BlockState state) {
+	public Pair<Palette, PaletteBlockShape> scan(BlockState state) {
 		if (state.getBlock() == Blocks.AIR)
 			return null;
 
-		if (definition.containsValue(state)) {
-			for (Palette key : definition.keySet())
-				if (definition.get(key).equals(state))
-					return key;
+		for (Entry<Palette, PaletteMapping> entry : definition.entrySet()) {
+			PaletteBlockShape shape = entry.getValue()
+				.find(state);
+			if (shape != null)
+				return Pair.of(entry.getKey(), shape);
 		}
 
-		// contains but rotated
-		Palette keyIgnoreRotation = getKeyIgnoreRotation(state);
-		return keyIgnoreRotation;
-	}
-
-	protected Palette getKeyIgnoreRotation(BlockState state) {
-		Map<Block, Palette> scanMap = new HashMap<>();
-		definition.forEach((palette, block) -> {
-			scanMap.put(block.getBlock(), palette);
-		});
-		
-		if (scanMap.containsKey(state.getBlock()))
-			return scanMap.get(state.getBlock());
-		
 		return null;
 	}
 

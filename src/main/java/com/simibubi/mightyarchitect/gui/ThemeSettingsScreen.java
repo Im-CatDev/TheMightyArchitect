@@ -19,7 +19,7 @@ import com.simibubi.mightyarchitect.gui.widgets.ScrollInput;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 
-public class ThemeSettingsScreen extends AbstractSimiScreen {
+public class ThemeSettingsScreen extends SimpleScreen {
 
 	private DesignTheme theme;
 
@@ -94,7 +94,7 @@ public class ThemeSettingsScreen extends AbstractSimiScreen {
 		toggleButtons.add(button);
 		guiIndicator = new Indicator(x, y - 5, "");
 		guiIndicator.state = theme.getLayers()
-			.contains(DesignLayer.Foundation) ? State.ON : State.OFF;
+			.contains(DesignLayer.FOUNDATION) ? State.ON : State.OFF;
 		indicators.add(guiIndicator);
 
 		x += 20;
@@ -104,7 +104,7 @@ public class ThemeSettingsScreen extends AbstractSimiScreen {
 		toggleButtons.add(button);
 		guiIndicator = new Indicator(x, y - 5, "");
 		guiIndicator.state = theme.getLayers()
-			.contains(DesignLayer.Open) ? State.ON : State.OFF;
+			.contains(DesignLayer.ARCHWAYS) ? State.ON : State.OFF;
 		indicators.add(guiIndicator);
 
 		x += 20;
@@ -114,7 +114,7 @@ public class ThemeSettingsScreen extends AbstractSimiScreen {
 		toggleButtons.add(button);
 		guiIndicator = new Indicator(x, y - 5, "");
 		guiIndicator.state = theme.getLayers()
-			.contains(DesignLayer.Special) ? State.ON : State.OFF;
+			.contains(DesignLayer.SPECIAL) ? State.ON : State.OFF;
 		indicators.add(guiIndicator);
 
 		x = topLeftX + 10;
@@ -145,7 +145,7 @@ public class ThemeSettingsScreen extends AbstractSimiScreen {
 		toggleButtons.add(button);
 		guiIndicator = new Indicator(x, y - 5, "");
 		guiIndicator.state = theme.getTypes()
-			.contains(DesignType.ROOF) ? State.ON : State.OFF;
+			.contains(DesignType.GABLE_ROOF) ? State.ON : State.OFF;
 		indicators.add(guiIndicator);
 
 		x += 40;
@@ -166,7 +166,7 @@ public class ThemeSettingsScreen extends AbstractSimiScreen {
 		toggleButtons.add(button);
 		guiIndicator = new Indicator(x, y - 5, "");
 		guiIndicator.state = theme.getTypes()
-			.contains(DesignType.TOWER_FLAT_ROOF) ? State.ON : State.OFF;
+			.contains(DesignType.TOWER_CAP) ? State.ON : State.OFF;
 		indicators.add(guiIndicator);
 
 		x += 20;
@@ -176,7 +176,7 @@ public class ThemeSettingsScreen extends AbstractSimiScreen {
 		toggleButtons.add(button);
 		guiIndicator = new Indicator(x, y - 5, "");
 		guiIndicator.state = theme.getTypes()
-			.contains(DesignType.TOWER_ROOF) ? State.ON : State.OFF;
+			.contains(DesignType.TOWER_CONE) ? State.ON : State.OFF;
 		indicators.add(guiIndicator);
 
 		labelRoomHeight =
@@ -297,16 +297,16 @@ public class ThemeSettingsScreen extends AbstractSimiScreen {
 		layers.addAll(DesignLayer.defaults());
 
 		if (activated(regular))
-			layers.add(DesignLayer.Regular);
+			layers.add(DesignLayer.REGULAR);
 		if (activated(foundation))
-			layers.add(DesignLayer.Foundation);
+			layers.add(DesignLayer.FOUNDATION);
 		if (activated(open))
-			layers.add(DesignLayer.Open);
+			layers.add(DesignLayer.ARCHWAYS);
 		if (activated(special))
-			layers.add(DesignLayer.Special);
+			layers.add(DesignLayer.SPECIAL);
 
 		if (!roofLayerExists())
-			layers.remove(DesignLayer.Roofing);
+			layers.remove(DesignLayer.ROOFING);
 
 		theme.setLayers(layers);
 
@@ -316,13 +316,13 @@ public class ThemeSettingsScreen extends AbstractSimiScreen {
 		if (activated(flatRoof))
 			types.add(DesignType.FLAT_ROOF);
 		if (activated(roof))
-			types.add(DesignType.ROOF);
+			types.add(DesignType.GABLE_ROOF);
 		if (activated(tower))
 			types.add(DesignType.TOWER);
 		if (activated(towerFlatRoof))
-			types.add(DesignType.TOWER_FLAT_ROOF);
+			types.add(DesignType.TOWER_CAP);
 		if (activated(towerRoof))
-			types.add(DesignType.TOWER_ROOF);
+			types.add(DesignType.TOWER_CONE);
 
 		theme.setTypes(types);
 

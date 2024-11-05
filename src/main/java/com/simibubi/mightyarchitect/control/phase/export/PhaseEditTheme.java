@@ -73,15 +73,15 @@ public class PhaseEditTheme extends PhaseBase {
 			backText = "Back";
 			leftText = "Front";
 			break;
-		case ROOF:
+		case GABLE_ROOF:
 			frontText = "Facade";
 			leftText = "Side";
 			rightText = "Side";
 			backText = "Back";
 			break;
 		case TOWER:
-		case TOWER_FLAT_ROOF:
-		case TOWER_ROOF:
+		case TOWER_CAP:
+		case TOWER_CONE:
 			break;
 		default:
 			break;
@@ -158,15 +158,15 @@ public class PhaseEditTheme extends PhaseBase {
 				selectedDesign.getSize()
 					.offset(-margin, 0, -margin)));
 			break;
-		case ROOF:
+		case GABLE_ROOF:
 			int span = DesignExporter.designParameter;
 			margin = (selectedDesign.width - span) / 2;
 			effectiveSelectedDesign = outlineFunc.apply(new Cuboid(selectedDesign.getOrigin()
 				.offset(margin, 0, 0), selectedDesign.width - 2 * margin, selectedDesign.height, 3));
 			break;
 		case TOWER:
-		case TOWER_FLAT_ROOF:
-		case TOWER_ROOF:
+		case TOWER_CAP:
+		case TOWER_CONE:
 			int radius = DesignExporter.designParameter;
 			margin = (selectedDesign.width - (radius * 2 + 1)) / 2;
 			BlockPos center = selectedDesign.getCenter()

@@ -4,6 +4,7 @@ import com.simibubi.mightyarchitect.control.design.DesignExporter;
 import com.simibubi.mightyarchitect.control.phase.export.PhaseEditTheme;
 import com.simibubi.mightyarchitect.control.phase.export.PhaseListThemesForEditing;
 import com.simibubi.mightyarchitect.control.phase.export.PhaseManageThemes;
+import com.simibubi.mightyarchitect.control.weathering.PhaseWeathering;
 
 public enum ArchitectPhases {
 
@@ -21,6 +22,9 @@ public enum ArchitectPhases {
 	
 	/** Create a new Palette while previewing its effect. */
 	CreatingPalette(new PhaseCreatingPalette(), "Pallete Mode"),
+	
+	/** Tear it all back down. */
+	Weathering(new PhaseWeathering(), "Weathering Mode"),
 	
 	// Creator phases
 	

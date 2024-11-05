@@ -9,7 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-public class Label extends AbstractSimiWidget {
+public class Label extends SimpleWidget {
 
 	public Component text;
 	public String suffix;

@@ -100,6 +100,12 @@ public class ArchitectMenu {
 				ArchitectManager.compose();
 				return true;
 
+			case 'w':
+				if (test)
+					return false;
+				ArchitectManager.enterPhase(ArchitectPhases.Weathering);
+				return true;
+
 			case 's':
 				if (test)
 					return false;
@@ -123,6 +129,14 @@ public class ArchitectMenu {
 
 			case 'u':
 				ArchitectManager.unload();
+				return true;
+			}
+			break;
+
+		case Weathering:
+			switch (c) {
+			case 'f':
+				ArchitectManager.enterPhase(ArchitectPhases.Previewing);
 				return true;
 			}
 			break;
@@ -250,6 +264,10 @@ public class ArchitectMenu {
 			keybinds.put("U", "Unload");
 			break;
 
+		case Weathering:
+			keybinds.put("F", "Return");
+			break;
+
 		case CreatingPalette:
 			keybinds.put("F", "Save Palette");
 			keybinds.put("D", "Discard Palette");
@@ -274,6 +292,7 @@ public class ArchitectMenu {
 			keybinds.lineBreak();
 
 			if (!ArchitectManager.testRun) {
+				keybinds.put("W", "Start Weathering");
 				keybinds.put("S", "Save as Schematic");
 				if (Minecraft.getInstance().player.isCreative())
 					keybinds.put("P", "Print blocks into world");

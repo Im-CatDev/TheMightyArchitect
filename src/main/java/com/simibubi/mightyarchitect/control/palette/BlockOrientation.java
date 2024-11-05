@@ -100,7 +100,9 @@ public enum BlockOrientation {
 		return valueOf(half, facing);
 	}
 
-	public static BlockOrientation valueOf(char character) {
+	public static BlockOrientation getByChar(char character) {
+		if (character == ' ')
+			return NONE;
 		return values()[character - 'A'];
 	}
 

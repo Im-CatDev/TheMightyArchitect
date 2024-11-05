@@ -33,9 +33,8 @@ public class DesignHelper {
 	public static Design pickRandom(DesignQuery query, Random rand) {
 		Design design = pickRandomNoFallback(query, rand);
 
-		if (design == null && query.fallback) {
-			return pickRandomNoFallback(query.withTheme(ThemeStorage.IncludedThemes.Fallback.theme), rand);
-		}
+		if (design == null && query.fallback)
+			return pickRandomNoFallback(query.withTheme(ThemeStorage.IncludedThemes.FALLBACK.theme), rand);
 
 		return design;
 	}
@@ -46,11 +45,9 @@ public class DesignHelper {
 			int index = rand.nextInt(remainingDesigns.size());
 
 			Design chosen = remainingDesigns.get(index);
-			if (query.isWidthIgnored() || chosen.fitsHorizontally(query.desiredWidth)) {
-				if (query.isHeightIgnored() || chosen.fitsVertically(query.desiredHeight)) {
+			if (query.isWidthIgnored() || chosen.fitsHorizontally(query.desiredWidth))
+				if (query.isHeightIgnored() || chosen.fitsVertically(query.desiredHeight))
 					return chosen;
-				}
-			}
 
 			remainingDesigns.remove(index);
 		}
@@ -118,7 +115,7 @@ public class DesignHelper {
 		}
 
 		// Open Arcs layer - try to have similar walls
-		if (layer == DesignLayer.Open) {
+		if (layer == DesignLayer.ARCHWAYS) {
 			if (wallA.fitsHorizontally(length - 2))
 				wallB = wallA;
 			else if (wallB.fitsHorizontally(width - 2))
@@ -193,7 +190,7 @@ public class DesignHelper {
 		}
 
 		if (roof == null) {
-			DesignType type = flat ? DesignType.TOWER_FLAT_ROOF : DesignType.TOWER_ROOF;
+			DesignType type = flat ? DesignType.TOWER_CAP : DesignType.TOWER_CONE;
 			DesignQuery roofQuery = new DesignQuery(theme, layer, type).withWidth(diameter);
 			roof = designProvider.find(roofQuery);
 			designProvider.cacheRoof(stack, roof);
@@ -231,7 +228,7 @@ public class DesignHelper {
 		}
 
 		if (roof == null) {
-			roof = designProvider.find(new DesignQuery(theme, layer, DesignType.ROOF).withWidth(width));
+			roof = designProvider.find(new DesignQuery(theme, layer, DesignType.GABLE_ROOF).withWidth(width));
 			designProvider.cacheRoof(stack, roof);
 		}
 
@@ -268,7 +265,7 @@ public class DesignHelper {
 		}
 
 		if (roof == null) {
-			roof = designProvider.find(new DesignQuery(theme, layer, DesignType.ROOF).withWidth(width));
+			roof = designProvider.find(new DesignQuery(theme, layer, DesignType.GABLE_ROOF).withWidth(width));
 			designProvider.cacheRoof(stack, roof);
 		}
 

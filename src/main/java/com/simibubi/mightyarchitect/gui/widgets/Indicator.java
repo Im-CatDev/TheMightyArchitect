@@ -7,7 +7,7 @@ import com.simibubi.mightyarchitect.gui.ScreenResources;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
-public class Indicator extends AbstractSimiWidget {
+public class Indicator extends SimpleWidget {
 
 	public enum State {
 		OFF, ON, RED, YELLOW, GREEN;

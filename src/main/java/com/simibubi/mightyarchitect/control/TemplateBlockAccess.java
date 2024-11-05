@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -17,11 +18,14 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
@@ -34,12 +38,16 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
 
-public class TemplateBlockAccess extends WrappedWorld {
+public class TemplateBlockAccess extends WrappedWorld implements WorldGenLevel {
 
-	private Map<BlockPos, BlockState> blocks;
+	public Map<BlockPos, BlockState> blocks;
+
+	public Set<BlockPos> blocksNearGroundLevel;
+
 	private Cuboid bounds;
 	private BlockPos anchor;
 	private boolean localMode;
+	private boolean treeMode;
 
 	public TemplateBlockAccess(Map<BlockPos, BlockState> blocks, Cuboid bounds, BlockPos anchor) {
 		super(Minecraft.getInstance().level);
@@ -51,6 +59,10 @@ public class TemplateBlockAccess extends WrappedWorld {
 
 	public void localMode(boolean local) {
 		this.localMode = local;
+	}
+
+	public void treeMode(boolean tree) {
+		this.treeMode = tree;
 	}
 
 	private void updateBlockstates() {
@@ -74,6 +86,19 @@ public class TemplateBlockAccess extends WrappedWorld {
 		return blocks.keySet();
 	}
 
+	public Set<BlockPos> getPositionsNearGroundLevel() {
+		if (blocksNearGroundLevel != null)
+			return blocksNearGroundLevel;
+
+		PriorityQueue<BlockPos> sorter = new PriorityQueue<>((p1, p2) -> Integer.compare(p1.getY(), p2.getY()));
+		sorter.addAll(blocks.keySet());
+
+		blocksNearGroundLevel = new HashSet<>();
+		for (int i = 0; i < Math.max(2, blocks.size() / 20); i++)
+			blocksNearGroundLevel.add(sorter.poll());
+		return blocksNearGroundLevel;
+	}
+
 	@Override
 	public BlockEntity getBlockEntity(BlockPos pos) {
 		return null;
@@ -81,7 +106,9 @@ public class TemplateBlockAccess extends WrappedWorld {
 
 	@Override
 	public BlockState getBlockState(BlockPos globalPos) {
-		BlockPos pos = localMode ? globalPos : globalPos.subtract(anchor);
+		if (treeMode)
+			return Blocks.AIR.defaultBlockState();
+		BlockPos pos = (localMode ? globalPos : globalPos.subtract(anchor)).immutable();
 		if (getBounds().contains(pos) && blocks.containsKey(pos)) {
 			return blocks.get(pos);
 		} else {
@@ -157,7 +184,17 @@ public class TemplateBlockAccess extends WrappedWorld {
 
 	@Override
 	public boolean setBlock(BlockPos pos, BlockState state, int p_241211_3_, int p_241211_4_) {
-		blocks.put(localMode ? pos : pos.subtract(anchor), state);
+		if (treeMode && state.is(BlockTags.DIRT))
+			return true;
+		if (treeMode && state.is(BlockTags.LEAVES) && !getBlockState(pos).isAir())
+			return true;
+		BlockPos key = (localMode ? pos : pos.subtract(anchor)).immutable();
+		if (state.isAir())
+			blocks.remove(key);
+		else {
+			blocks.put(key, state);
+			bounds.include(key);
+		}
 		return true;
 	}
 
@@ -195,6 +232,16 @@ public class TemplateBlockAccess extends WrappedWorld {
 
 	public Cuboid getBounds() {
 		return bounds;
+	}
+
+	@Override
+	public long getSeed() {
+		return 0;
+	}
+
+	@Override
+	public ServerLevel getLevel() {
+		return null;
 	}
 
 }

@@ -10,11 +10,11 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public abstract class AbstractSimiWidget extends AbstractWidget {
+public abstract class SimpleWidget extends AbstractWidget {
 
 	protected List<Component> toolTip;
 
-	public AbstractSimiWidget(int xIn, int yIn, int widthIn, int heightIn) {
+	public SimpleWidget(int xIn, int yIn, int widthIn, int heightIn) {
 		super(xIn, yIn, widthIn, heightIn, Lang.empty());
 		toolTip = new LinkedList<>();
 	}

@@ -1,6 +1,8 @@
 {
 	"textures": {
-		"icon" : "mightyarchitect:block/slice_marker_top"
+		"side" : "mightyarchitect:block/slice_marker_top",
+		"end" : "block/jigsaw_bottom"
 	},
-	"parent": "mightyarchitect:block/slice_marker"
+	"parent": "block/cube_column",
+	"uvlock": true
 }

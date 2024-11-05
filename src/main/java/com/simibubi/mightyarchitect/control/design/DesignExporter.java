@@ -3,6 +3,8 @@ package com.simibubi.mightyarchitect.control.design;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.simibubi.mightyarchitect.AllBlocks;
 import com.simibubi.mightyarchitect.AllPackets;
 import com.simibubi.mightyarchitect.TheMightyArchitect;
@@ -13,6 +15,7 @@ import com.simibubi.mightyarchitect.control.design.partials.Wall;
 import com.simibubi.mightyarchitect.control.design.partials.Wall.ExpandBehaviour;
 import com.simibubi.mightyarchitect.control.palette.BlockOrientation;
 import com.simibubi.mightyarchitect.control.palette.Palette;
+import com.simibubi.mightyarchitect.control.palette.PaletteBlockShape;
 import com.simibubi.mightyarchitect.control.palette.PaletteDefinition;
 import com.simibubi.mightyarchitect.control.phase.export.PhaseEditTheme;
 import com.simibubi.mightyarchitect.foundation.utility.FilesHelper;
@@ -105,12 +108,13 @@ public class DesignExporter {
 			layerTag.putString("Trait", trait.name());
 
 			StringBuilder data = new StringBuilder();
+			StringBuilder shapeData = new StringBuilder();
 			for (int z = 0; z < size.getZ(); z++) {
 				for (int x = 0; x < size.getX(); x++) {
 					BlockPos pos = anchor.east()
 						.offset(x, y, z);
 					BlockState blockState = worldIn.getBlockState(pos);
-					Palette block = scanningPalette.scan(blockState);
+					Pair<Palette, PaletteBlockShape> block = scanningPalette.scan(blockState);
 
 					if (block == null && blockState.getBlock() != Blocks.AIR) {
 						Lang.text(blockState.getBlock()
@@ -121,12 +125,18 @@ public class DesignExporter {
 						return "Export failed";
 					}
 
-					data.append(block != null ? block.asChar() : ' ');
+					data.append(block != null ? block.getKey()
+						.asChar() : ' ');
+					shapeData.append(block != null ? block.getValue()
+						.asChar() : ' ');
 				}
-				if (z < size.getZ() - 1)
+				if (z < size.getZ() - 1) {
 					data.append(",");
+					shapeData.append(",");
+				}
 			}
 			layerTag.putString("Blocks", data.toString());
+			layerTag.putString("Shape", shapeData.toString());
 
 			StringBuilder orientationStrip = new StringBuilder();
 			for (int z = 0; z < size.getZ(); z++) {
@@ -148,7 +158,7 @@ public class DesignExporter {
 		// Additional data
 		int data = designParameter;
 		switch (type) {
-		case ROOF:
+		case GABLE_ROOF:
 			compound.putInt("Roofspan", data);
 			break;
 		case FLAT_ROOF:
@@ -158,12 +168,12 @@ public class DesignExporter {
 			if (data == -1)
 				return "Revisit the Design settings.";
 			ExpandBehaviour expandBehaviour = Wall.ExpandBehaviour.values()[data];
-			if (size.getX() == 1 && expandBehaviour == ExpandBehaviour.MergedRepeat)
-				return "Can't merge Walls of length 1. Use 'Repeat' instead.";
+			if (size.getX() == 1 && expandBehaviour == ExpandBehaviour.MERGED)
+				return "Cannot merge walls of length 1. Use 'Adjacent' instead.";
 			compound.putString("ExpandBehaviour", expandBehaviour.name());
 			break;
-		case TOWER_FLAT_ROOF:
-		case TOWER_ROOF:
+		case TOWER_CAP:
+		case TOWER_CONE:
 		case TOWER:
 			compound.putInt("Radius", data);
 			break;
@@ -185,10 +195,8 @@ public class DesignExporter {
 		String filename = "";
 		String designPath = "";
 
-		BlockPos signPos = anchor.above();
-		if (worldIn.getBlockState(signPos)
-			.getBlock() == Blocks.SPRUCE_SIGN) {
-			SignBlockEntity sign = (SignBlockEntity) worldIn.getBlockEntity(signPos);
+		BlockPos signPos = anchor.south();
+		if (worldIn.getBlockEntity(signPos) instanceof SignBlockEntity sign) {
 			filename = sign.getFrontText()
 				.getMessage(1, false)
 				.getString();
@@ -206,8 +214,12 @@ public class DesignExporter {
 			}
 		}
 
-		AllPackets.channel.sendToServer(new PlaceSignPacket(layer.getDisplayName()
-			.substring(0, 1) + ". " + type.getDisplayName(), filename, signPos));
+		String dataLine = type.name();
+		if (type.hasAdditionalData())
+			dataLine += ", " + designParameter;
+
+		AllPackets.channel
+			.sendToServer(new PlaceSignPacket(theme.getDisplayName(), filename, layer.name(), dataLine, signPos));
 		FilesHelper.saveTagCompoundAsJson(compound, designPath);
 		return designPath;
 		//
@@ -219,7 +231,7 @@ public class DesignExporter {
 		scanningPalette = theme.getDefaultPalette();
 		if (layer == null || !theme.getLayers()
 			.contains(layer))
-			layer = DesignLayer.Regular;
+			layer = DesignLayer.REGULAR;
 		if (type == null || !theme.getTypes()
 			.contains(type))
 			type = DesignType.WALL;

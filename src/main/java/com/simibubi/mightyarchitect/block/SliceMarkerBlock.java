@@ -1,6 +1,5 @@
 package com.simibubi.mightyarchitect.block;
 
-import com.simibubi.mightyarchitect.AllItems;
 import com.simibubi.mightyarchitect.control.design.DesignSlice.DesignSliceTrait;
 import com.simibubi.mightyarchitect.foundation.utility.Lang;
 
@@ -51,8 +50,6 @@ public class SliceMarkerBlock extends Block {
 		BlockHitResult hit) {
 		if (hit.getDirection()
 			.getAxis() == Axis.Y)
-			return InteractionResult.PASS;
-		if (AllItems.ARCHITECT_WAND.typeOf(player.getItemInHand(handIn)))
 			return InteractionResult.PASS;
 		if (worldIn.isClientSide)
 			return InteractionResult.SUCCESS;
